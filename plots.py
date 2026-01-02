@@ -102,7 +102,7 @@ def plot_barometer_and_temperatures(df, calibration_times, channels_colors, titl
                     linestyle='-', c=channels_colors['BB'], lw=1.5,
                     label='P_barometric')
         axs[0].set_ylabel('Confined presssure [dBar]', fontsize=text_size)
-        axs[0].set_ylim(9.3, 9.4)
+        axs[0].set_ylim(9.2, 9.7)
 
         ## TemperatureS
         for t in calibration_times:
