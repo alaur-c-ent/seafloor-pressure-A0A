@@ -55,4 +55,54 @@ def read_events_log(data_path):
     return events_df, times_marine, times_ambi, times_error
 
 
+def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
+    """
+    Flag A0A data as Ambient (A), Zero (Z) or False (F),
+    extract calibration sequences (Z), clean data (A only) by removing bad quality data (F).
 
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Time-indexed dataframe containing uncorrected data.
+    times_marine : array-like pandas.Series
+        Timestamps of atmospheric (zero-pressure) valve switches.
+    times_ambi : array-like pandas.Series
+        Timestamps of marine valve switches.
+    times_error : int, optional
+        Timestamps of marine valve movements errors.
+
+    Returns
+    -------
+    df_clean : pandas.DataFrame
+        Dataframe with F data removed.
+    zeros_df : pandas.DataFrame
+        Dataframe containing only zero-pressure sequences.
+    """
+    ### We tag the A0A record by adding a Type flag: 
+    ### A = Ambient, Z = Zeros, F = Flagged as bad
+    df.insert(len(df.iloc[0]), 'Type', 'A')
+    df['Type'] = 'A'
+    
+    for ta, tm in zip(times_ambi, times_marine[:-1]):
+        ### Re-write over the flagged 'A' only for zero-measurments windows we want to keep
+        Z_start = ta - pd.Timedelta(seconds=10)
+        ### Extract 20 minutes long zeros
+        Z_end = tm + pd.Timedelta(minutes=20, seconds=10)
+        ### WARNING, it can change from one instrument to another (I don't know why)
+        ### from t + 20 minutes - 2s to tm - 2s
+        # Z_end = tm - pd.Timedelta(seconds=2)
+        df.loc[Z_start:Z_end, 'Type'] = 'Z'
+
+    #### FLAG valve movement errors etc
+    ## Delete for the MAY33 dataset, keep values even of no calib
+    for t_err in times_error:
+        err_start = t_err - pd.Timedelta(minutes=25)
+        df.loc[err_start:, 'Type'] = 'F'
+
+    #### Keep only the Z FLAG 
+    zeros_df = df[df.Type == 'Z']
+    #### Keeep only the good quality records
+    # df_clean = df[df.Type != 'F']
+    df_clean = df[df.Type == 'A']
+
+    return zeros_df, df_clean
