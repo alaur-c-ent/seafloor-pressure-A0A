@@ -85,13 +85,13 @@ def main():
     print(f'\n{today} - Analysing pressure dataset from {start_date} to {end_date}.')
     print(A0A_df.head())
 
-    #### Plot
-    pressure_key = 'BPR_pressure_1'  # or 'BPR_pressure_2'
-    outfile = f'log_{station_name}_BPR{pressure_key[-1]}_{start_date}_{end_date}.pdf'
-
     ######################################
     #### PLOT A0A UNCORRECTED DATA WITH LOG EVENTS
     print(f'\n{today} - Diagnostic plot of {station_name}.\n')
+  
+    pressure_key = 'BPR_pressure_1'  # or 'BPR_pressure_2'
+    outfile = f'log_{station_name}_BPR{pressure_key[-1]}_{start_date}_{end_date}.pdf'
+
     plotlog(
         A0A_df,
         key=pressure_key,
