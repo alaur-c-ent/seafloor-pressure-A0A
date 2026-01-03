@@ -13,6 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.dates as mdates
+import matplotlib.ticker as ticker
 
 def get_color_from_name(name, colors_code, default='black'):
     for key, value in colors_code.items():
@@ -34,7 +35,7 @@ def plotlog(df, key, events_log, colors_code=None, title='', plot_log=None, outp
     events_log : pandas.Dataframe
         Time-indexed dataframe containing timestamps of the valve movements. 
     colors_code : dict, optionnal
-        Dictionary defining uniform color codes for channels.
+        Dictionary defining uniform color scheme for channels.
     title : str
         Title of the figure. Default is empty title (meaning no title)
     plot_log : boolean
@@ -54,7 +55,7 @@ def plotlog(df, key, events_log, colors_code=None, title='', plot_log=None, outp
                       'BPR_pressure_2' : 'darkgreen',
                       'Barometer_pressure' : 'violet',
                       'External_temp' : 'tab:red'}
-        plt.figure() #figsize=(10, 6))
+        plt.figure(figsize=(10, 6))
         plt.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
         plt.plot(df.index, df[key], label=key, color=get_color_from_name(key, colors_code))
         plt.xlabel('Dates')
@@ -73,8 +74,7 @@ def plotlog(df, key, events_log, colors_code=None, title='', plot_log=None, outp
         return plt.show()
 
 
-def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, title='', text_size='large', 
-                                    plot_fig=None, output_path=None, filenamout=None, savefig=None):
+def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, title='', text_size='large', plot_fig=None, output_path=None, filenamout=None, savefig=None):
     """
     Plot barometric pressure and temperature time series with calibration events.
 
@@ -85,7 +85,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
     calibration_times : array-like of datetime
         Times of atmospheric (zero-pressure) calibration sequences.
     colors_code : dict, optionnal
-        Dictionary defining uniform color codes for channels.
+        Dictionary defining uniform color scheme for channels.
     text_size : str, optional
         Font size for ticks, ticks labels and title.
     title : str
@@ -116,7 +116,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
                     linestyle='-', c=colors_code['BB'] or colors_code['Barometer_pressure'], lw=1.,
                     label='P_barometric', rasterized=True)
         axs[0].set_ylabel('Confined presssure [dBar]', fontsize=text_size)
-        #axs[0].set_ylim(9.2, 9.7)
+        # axs[0].set_ylim(9.3, 9.4)
 
         ## TemperatureS
         for t in calibration_times:
@@ -134,7 +134,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
                 linestyle='-', c=colors_code['External_temp'] or 'tab:red', lw=0.8, #alpha=0.6,
                     label='T_ext', rasterized=True)
         axs[1].set_ylabel('Degrees [°C]', fontsize=text_size)
-        #axs[1].set_ylim(2., 5.)
+        # axs[1].set_ylim(2., 5.)
         axs[-1].set_xlabel('Dates', fontsize=text_size)
 
         for _ax in axs:
@@ -142,12 +142,12 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
             for i, t in enumerate(calibration_times):
                 _ax.axvline(t, color='r', lw=0.8, zorder=1, alpha=0.8, label='Calib.' if i == 0 else '')
                 axs[0].annotate(f'{i+1}', 
-                            xy=(t, np.max(df['Barometer_pressure']-0.01)), 
+                            xy=(t, np.max(df['Barometer_pressure']+0.01)), 
                             textcoords='data', 
                             ha='center', va='bottom',
                             zorder=10)
             _ax.tick_params(axis='both', labelsize=text_size)
-            _ax.legend(loc='lower center', ncol=5, fontsize=text_size, labelspacing=0.2)
+            _ax.legend(loc='upper center', ncol=5, labelspacing=0.2, fontsize=text_size)
         plt.tight_layout()
         if savefig:
             if output_path is not None and filenamout is not None:
@@ -155,10 +155,10 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
             else:
                 print('Ouput path and/or name of the figure are None.')
         return plt.show()
-
+    
 
 def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(600, 1000),
-                      ylim=(9.3, 9.8), cmap='viridis', text_size='large', figsize=(8, 4)):
+                      ylim=(9., 10.), cmap='viridis', text_size='large', figsize=(8, 4)):
     """
     Subplot calibration sequences of each pressure sensors.
 
@@ -205,9 +205,11 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
             if seg.empty:
                 calib_id += 1
                 continue
+
             elapsed = seg['time_seconds'] - seg['time_seconds'].iloc[0]
             color = cmap_obj(norm(calib_id))
-            ax.plot(elapsed, seg[col], color=color, lw=0.8)
+
+            ax.plot(elapsed, seg[col], color=color, lw=1.)
             calib_id += 1
 
         # Highlight selected time window
@@ -230,10 +232,8 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
     return fig
 
 
-
-
 def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 1000), 
-                    ylim=(9., 10.), highlight_ids=None, colors_code=None, figsize=(10, 8)):
+                    ylim=(9.3, 9.8), highlight_ids=None, colors_code=None, figsize=(10, 8)):
     """
     This function display all zero segments for multiple variables 
     in function of the relative time from valve switch, 
@@ -250,7 +250,7 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
     select_window : tuple
         Start and and relative times (in seconds)of the selected stable window.
     ylim : tuple,
-        Internal pressure (barometric) limitation for the y axis.
+        Internal pressure (barometric) limitation for the y axis. 
     highlight_ids : list, optional
         List of calibration segment indices to highlight.
     colors_code : dict, optional
@@ -300,7 +300,7 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
 
             if var in ['BPR_pressure_1', 'BPR_pressure_2']:
                 ax.set_ylim(*ylim)
-                
+
             # Highlight selected segments
             if calib_id in highlight_ids:
                 color = 'purple'
@@ -323,7 +323,6 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
     return fig
 
 
-
 def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', colors_code=None, use_cmap=False,
                             ylim=(0, 20), text_size='large', figsize=(10, 5)):
     """
@@ -338,7 +337,7 @@ def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', col
     title : str, 
         Title of the figure. Default is empty title (meaning no title)
     colors_code : dict, optional
-        Dictionary defining colors scheme for sensors.
+        Dictionary defining uniform color scheme for sensors.
     use_cmap : bool, optional
         If True, color points using a colormap as a function of calibration sequences indexes.
     ylim : tuple, optional
@@ -408,3 +407,4 @@ def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', col
         cbar.update_ticks()
 
     return fig
+
