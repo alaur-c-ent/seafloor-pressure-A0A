@@ -208,3 +208,91 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
 
     fig.tight_layout()
     return fig
+
+
+
+
+def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 1000), 
+                      highlight_ids=None, colors=None, figsize=(10, 8)):
+    """
+    This function display all zero segments for multiple variables 
+    in function of the relative time from valve switch, 
+    optionnal highlighting of selected calibration sequences.
+
+    Parameters
+    ----------
+    zeros_df : pandas.DataFrame
+        DataFrame containing zero segments.
+    calibration_times : array-like
+        Start times of zero-pressure calibration sequences.
+    window : timedelta
+        Duration of each zero segment.
+    select_window : tuple
+        Start and and relative times (in seconds)of the selected stable window.
+    highlight_ids : list, optional
+        List of calibration segment indices to highlight.
+    colors : dict, optional
+        Dictionary defining color scheme for channels.
+    """
+
+    if highlight_ids is None:
+        highlight_ids = []
+
+    if colors is None:
+        colors = {'BPR_pressure_1' : 'orange',
+                  'BPR_pressure_2' : 'darkgreen',
+                  'Barometer_pressure' : 'violet',
+                  'External_temp' : 'tab:red'}
+
+    variables = [
+        ('BPR_pressure_1', 'Internal pressure [dBar]'),
+        ('BPR_pressure_2', 'Internal pressure [dBar]'),
+        ('Barometer_pressure', 'Internal pressure [dBar]'),
+        ('External_temp', 'Temperature [°C]')]
+
+    fig, axs = plt.subplots(2, 2, figsize=figsize, sharex=True)
+    axs = axs.flatten()
+
+    for ax, (var, ylabel) in zip(axs, variables):
+        ax.set_ylabel(ylabel)
+        ax.grid(which='both', lw=0.4, color='lightgrey', zorder=0)
+
+        calib_id = 1
+        for t in calibration_times:
+            seg = zeros_df.loc[t:t+window]
+            if seg.empty:
+                calib_id += 1
+                continue
+
+            elapsed = seg['time_seconds'] - seg['time_seconds'].iloc[0]
+
+            # Default appearance
+            color = 'lightgrey'
+            lw = 0.8
+            zorder = 2
+
+            # Channel-based color (if provided)
+            for key, c in colors.items():
+                if key in var:
+                    color = c
+
+            # Highlight selected segments
+            if calib_id in highlight_ids:
+                color = 'purple'
+                lw = 1.5
+                zorder = 5
+
+            ax.plot(elapsed, seg[var], color=color, lw=lw, zorder=zorder)
+            calib_id += 1
+
+        # Highlight selected time window
+        ax.axvspan(select_window[0], select_window[1], 
+                   color='silver', alpha=0.4, zorder=1,)
+
+        ax.set_title(var, fontsize='medium')
+
+    for ax in axs[2:]:
+        ax.set_xlabel('Elapsed time [s]')
+
+    fig.tight_layout()
+    return fig
