@@ -13,6 +13,9 @@ Diagnostic plots (full timeseries without correction) :
 
 FLAG zeros segments (calibration sequences) as Z, errors as F and, A, the rest.
 
+Save clean dataset in txt file format. 
+Resample dataset, save the 1 minute downsampled version only. 
+
 conda activate myrsk
 
 08/2025 — alaurent
