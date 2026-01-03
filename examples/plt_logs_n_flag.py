@@ -87,17 +87,17 @@ def main():
 
     ######################################
     #### PLOT A0A UNCORRECTED DATA WITH LOG EVENTS
-    print(f'\n{today} - Diagnostic plot of {station_name}.\n')
-  
     pressure_key = 'BPR_pressure_1'  # or 'BPR_pressure_2'
     outfile = f'log_{station_name}_BPR{pressure_key[-1]}_{start_date}_{end_date}.pdf'
 
+    print(f'\n{today} - Diagnostic plot of {station_name}.\n')
     plotlog(
         A0A_df,
         key=pressure_key,
-        events=events_df,
+        events_log=events_df,
+        colors_code=channels_colors,
         title=f'{station_name} — {start_date} to {end_date}',
-        plot_log=show_figure, output_path=output_path, filenamout=outfile, savefig=save_figure)
+        plot_log=False, output_path=output_path, filenamout=outfile, savefig=save_figure)
     
     ######################################
     #### CHECK AT THE INTERNAL STATE OF THE INSTRUMENT 
@@ -106,7 +106,7 @@ def main():
     print(f'\n{today} -  Plot {title}.\n')
     plot_barometer_and_temperatures(A0A_df, 
                                     calibration_times=t_atmo, 
-                                    colors=channels_colors, 
+                                    colors_code=channels_colors, 
                                     title=title, 
                                     text_size='large', 
                                     plot_fig=show_figure, output_path=output_path, filenamout=outfile, savefig=save_figure)
