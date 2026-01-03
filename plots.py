@@ -94,33 +94,33 @@ def plot_barometer_and_temperatures(df, calibration_times, channels_colors, titl
         The generated figure.
     """
     if plot_fig:
-        _, axs = plt.subplots(2, 1, sharex=True) #figsize=(12, 6)
+        _, axs = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
        
         axs[0].set_title(title, fontsize=text_size)
         ## Barometer pressure
         axs[0].plot(df.index, df['Barometer_pressure'], 
                     linestyle='-', c=channels_colors['BB'], lw=1.5,
-                    label='P_barometric')
+                    label='P_barometric', rasterized=True)
         axs[0].set_ylabel('Confined presssure [dBar]', fontsize=text_size)
-        axs[0].set_ylim(9.2, 9.7)
+        #axs[0].set_ylim(9.2, 9.7)
 
         ## TemperatureS
         for t in calibration_times:
             axs[1].axvline(t, color='r', lw=0.8, zorder=1) #, alpha=0.8)
         axs[1].plot(df.index, df['Barometer_temp'], 
                 linestyle='-', c=channels_colors['BB'], lw=0.8, #alpha=0.6,
-                    label='T_barom')
+                    label='T_barom', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_1'], 
                 linestyle='dashed', c='orange', lw=0.8, #alpha=0.6,
-                    label='T_BPR1')
+                    label='T_BPR1', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_2'], 
                 linestyle='dashed', c='darkgreen', lw=0.8, #alpha=0.6,
-                    label='T_BPR2')
+                    label='T_BPR2', rasterized=True)
         axs[1].plot(df.index, df['External_temp'], 
                 linestyle='-', c='tab:red', lw=0.8, #alpha=0.6,
-                    label='T_ext')
+                    label='T_ext', rasterized=True)
         axs[1].set_ylabel('Degrees [°C]', fontsize=text_size)
-        axs[1].set_ylim(2., 5.)
+        #axs[1].set_ylim(2., 5.)
         axs[-1].set_xlabel('Dates', fontsize=text_size)
 
         for _ax in axs:
@@ -128,7 +128,7 @@ def plot_barometer_and_temperatures(df, calibration_times, channels_colors, titl
             for i, t in enumerate(calibration_times):
                 _ax.axvline(t, color='r', lw=0.8, zorder=1, alpha=0.8, label='Calib.' if i == 0 else '')
                 axs[0].annotate(f'{i+1}', 
-                            xy=(t, np.max(df['Barometer pressure']+0.01)), 
+                            xy=(t, np.max(df['Barometer_pressure']-0.01)), 
                             textcoords='data', 
                             ha='center', va='bottom',
                             zorder=10)
