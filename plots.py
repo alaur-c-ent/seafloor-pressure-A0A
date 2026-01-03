@@ -233,7 +233,7 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
 
 
 def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 1000), 
-                      highlight_ids=None, colors=None, figsize=(10, 8)):
+                    ylim=(9., 10.), highlight_ids=None, colors=None, figsize=(10, 8)):
     """
     This function display all zero segments for multiple variables 
     in function of the relative time from valve switch, 
@@ -249,6 +249,8 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
         Duration of each zero segment.
     select_window : tuple
         Start and and relative times (in seconds)of the selected stable window.
+    ylim : tuple,
+        Internal pressure (barometric) limitation for the y axis.
     highlight_ids : list, optional
         List of calibration segment indices to highlight.
     colors : dict, optional
@@ -296,6 +298,9 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
                 if key in var:
                     color = c
 
+            if var in ['BPR_pressure_1', 'BPR_pressure_2']:
+                ax.set_ylim(*ylim)
+                
             # Highlight selected segments
             if calib_id in highlight_ids:
                 color = 'purple'
