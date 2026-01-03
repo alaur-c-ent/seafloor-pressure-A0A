@@ -106,3 +106,70 @@ def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
     df_clean = df[df.Type == 'A']
 
     return zeros_df, df_clean
+
+
+def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
+    """
+    Compute calibration values from zero-pressure segments.
+
+    Parameters
+    -------
+    zeros_df : pandas.DataFrame
+        Dataframe containing only zero-pressure sequences.
+    times_ambi : array-like pandas.Series
+        Timestamps of marine valve switches.
+    window : int
+        Calibration length in seconds (20 minutes -> 1250 s). 
+    lim_inf : int
+        Relative time in seconds after internal valve switch 
+        of the selected stable window to compute calibration value.
+    lim_sup
+        End time (in relative seconds) 
+        of the selected stable window to compute calibration value.
+             
+    Returns
+    -------
+    calib_df : pandas.DataFrame
+        Calibration time series for each pressure sensor.
+    """
+    results = []
+
+    calib_n = 1
+    for t in times_ambi:
+        seg = zeros_df.loc[t:t+window]
+        if seg.empty:
+                print(f'No data for segment starting at {t}')
+                continue
+        elapsed_s = seg['time_seconds'] - seg['time_seconds'].iloc[0]
+        
+        ## Extract the stable zeros selected window
+        mask = (elapsed_s >= lim_inf) & (elapsed_s <= lim_sup)
+        sel = seg.loc[mask]
+        if sel.empty:
+            print(f"No data in {lim_inf}–{lim_sup}s window for segment starting at {t}")
+        P1_zero = sel['BPR_pressure_1']
+        P2_zero = sel['BPR_pressure_2']
+        P_barom_zero = sel['Barometer_pressure']
+        ### Correct zeros from barometer pressure
+        calib1_value = (P1_zero - P_barom_zero).mean()
+        calib2_value = (P2_zero - P_barom_zero).mean()
+        ### Store final calibration zero-pressure value
+        results.append({'id': calib_n, 
+                        'Date': t.date(), 
+                        'Calib_1': calib1_value, 
+                        'Calib_2': calib2_value,
+                        })
+        calib_n += 1
+  
+    print(f'\nThe total number of calibration segments is: {calib_n}\n')
+
+    ### Concatenate into a new dataframe 
+    calib_df = pd.DataFrame.from_records(results, 
+                                         index='id', 
+                                         columns=results[0].keys()) #.set_index('id')
+
+    ### Normalise the calibration by sutracting the inital state (first value)
+    calib_df['Calib_1'] -= calib_df['Calib_1'].values[0]
+    calib_df['Calib_2'] -= calib_df['Calib_2'].values[0]
+
+    return calib_df
