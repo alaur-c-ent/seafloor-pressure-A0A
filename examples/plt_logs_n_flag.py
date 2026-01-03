@@ -23,7 +23,8 @@ import numpy as np
 import pandas as pd
 from datetime import date, timedelta
 
-from io import (read_A0A_data, read_events_log, flag_and_extract_zeros)
+#sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
+from io_local import (read_A0A_data, read_events_log, flag_and_extract_zeros)
 from plots import (plotlog, plot_barometer_and_temperatures)
 
 
@@ -36,7 +37,7 @@ station_name = 'A0A_MAY33_R'
 rsk_reference = '208295_20250930_0551'
 rsk_ref_lst = rsk_reference.split('_')
 
-output_path = './figures/raw_pressure/'
+output_path = os.path.join(root_path, recover_date, station_name, 'figures/raw_pressure/')
 
 ########################################
 #### OPTIONS & AESTHETICS ####
@@ -74,7 +75,7 @@ def main():
     end_cut   = A0A_df.index.max() - edge_window
     A0A_df = A0A_df.loc[start_cut:end_cut]
     
-    start_date = A0A_df.min().date()
+    start_date = A0A_df.index.min().date()
     end_date = A0A_df.index.max().date()
 
     today = date.today().strftime("%Y%m%d")   ### Warning not UTC
@@ -88,6 +89,7 @@ def main():
 
     ######################################
     #### PLOT A0A UNCORRECTED DATA WITH LOG EVENTS
+    print(f'\n{today} - Diagnostic plot of {station_name}.\n')
     plotlog(
         A0A_df,
         key=pressure_key,
@@ -99,7 +101,12 @@ def main():
     #### CHECK AT THE INTERNAL STATE OF THE INSTRUMENT 
     outfile = f'Temp_n_intern_state_{station_name}_{today}.pdf'
     title = f'{station_name} - Barometer and temperature datasets'
-    plot_barometer_and_temperatures(A0A_df, t_atmo, channels_colors, title, text_size='large', 
+    print(f'\n{today} -  Plot {title}.\n')
+    plot_barometer_and_temperatures(A0A_df, 
+                                    calibration_times=t_atmo, 
+                                    colors=channels_colors, 
+                                    title=title, 
+                                    text_size='large', 
                                     plot_fig=show_figure, output_path=output_path, filenamout=outfile, savefig=save_figure)
 
     ######################################
