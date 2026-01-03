@@ -8,16 +8,20 @@ All plots
 """
 
 
-import sys, os, glob
+import os
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import matplotlib.colors as colors
 import matplotlib.dates as mdates
-from datetime import date, datetime, timedelta
 
-def plotlog(df, key, events_log, title='', plot_log=None, output_path=None, filenamout=None, savefig=None):
+def get_color_from_name(name, colors, default='black'):
+    for key, value in colors.items():
+        if key[-1].isdigit() and key[-1] in name:
+            return value
+    return default
+
+
+def plotlog(df, key, events_log, colors=None, title='', plot_log=None, output_path=None, filenamout=None, savefig=None):
     """
     Plot raw A0A pressure timeseries with events extracted from log.
 
@@ -29,6 +33,8 @@ def plotlog(df, key, events_log, title='', plot_log=None, output_path=None, file
         Name of the column to plot.
     events_log : pandas.Dataframe
         Time-indexed dataframe containing timestamps of the valve movements. 
+    colors : dict, optionnal
+        Dictionary defining uniform color codes for channels.
     title : str
         Title of the figure. Default is empty title (meaning no title)
     plot_log : boolean
@@ -43,13 +49,14 @@ def plotlog(df, key, events_log, title='', plot_log=None, output_path=None, file
         The generated figure.           
     """
     if plot_log:
-        if '1' in key:
-            color='orange'
-        elif '2' in key:
-            color='darkgreen'
+        if colors is None:
+            colors = {'BPR_pressure_1' : 'orange',
+                      'BPR_pressure_2' : 'darkgreen',
+                      'Barometer_pressure' : 'violet',
+                      'External_temp' : 'tab:red'}
         plt.figure() #figsize=(10, 6))
         plt.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
-        plt.plot(df.index, df[key], label=key, color=color)
+        plt.plot(df.index, df[key], label=key, color=get_color_from_name(key, colors))
         plt.xlabel('Dates')
         plt.ylabel('Pressure [dBar]')
         plt.title(title, loc='left')
@@ -66,7 +73,7 @@ def plotlog(df, key, events_log, title='', plot_log=None, output_path=None, file
         return plt.show()
 
 
-def plot_barometer_and_temperatures(df, calibration_times, colors, title='', text_size='large', plot_fig=None, output_path=None, filenamout=None, savefig=None):
+def plot_barometer_and_temperatures(df, calibration_times, colors=None, title='', text_size='large', plot_fig=None, output_path=None, filenamout=None, savefig=None):
     """
     Plot barometric pressure and temperature time series with calibration events.
 
@@ -76,7 +83,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors, title='', tex
         A0A dataframe containing pressure and temperature data.
     calibration_times : array-like of datetime
         Times of atmospheric (zero-pressure) calibration sequences.
-    colors : dict
+    colors : dict, optionnal
         Dictionary defining uniform color codes for channels.
     text_size : str, optional
         Font size for ticks, ticks labels and title.
@@ -94,12 +101,18 @@ def plot_barometer_and_temperatures(df, calibration_times, colors, title='', tex
         The generated figure.
     """
     if plot_fig:
+        if colors is None:
+            colors = {'BPR_pressure_1' : 'orange',
+                      'BPR_pressure_2' : 'darkgreen',
+                      'Barometer_pressure' : 'violet',
+                      'External_temp' : 'tab:red'}
+            
         _, axs = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
        
         axs[0].set_title(title, fontsize=text_size)
         ## Barometer pressure
         axs[0].plot(df.index, df['Barometer_pressure'], 
-                    linestyle='-', c=colors['BB'], lw=1.5,
+                    linestyle='-', c=colors['BB'] or colors['Barometer_pressure'], lw=1.5,
                     label='P_barometric', rasterized=True)
         axs[0].set_ylabel('Confined presssure [dBar]', fontsize=text_size)
         #axs[0].set_ylim(9.2, 9.7)
@@ -108,16 +121,16 @@ def plot_barometer_and_temperatures(df, calibration_times, colors, title='', tex
         for t in calibration_times:
             axs[1].axvline(t, color='r', lw=0.8, zorder=1) #, alpha=0.8)
         axs[1].plot(df.index, df['Barometer_temp'], 
-                linestyle='-', c=colors['BB'], lw=0.8, #alpha=0.6,
+                linestyle='-', c=colors['BB'] or colors['Barometer_pressure'], lw=0.8, #alpha=0.6,
                     label='T_barom', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_1'], 
-                linestyle='dashed', c=colors['BP1'], lw=0.8, #alpha=0.6,
+                linestyle='dashed', c=colors['BP1'] or colors['BPR_pressure_1'], lw=0.8, #alpha=0.6,
                     label='T_BPR1', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_2'], 
-                linestyle='dashed', c=colors['BP2'], lw=0.8, #alpha=0.6,
+                linestyle='dashed', c=colors['BP2'] or colors['BPR_pressure_2'], lw=0.8, #alpha=0.6,
                     label='T_BPR2', rasterized=True)
         axs[1].plot(df.index, df['External_temp'], 
-                linestyle='-', c='tab:red', lw=0.8, #alpha=0.6,
+                linestyle='-', c=colors['External_temp'] or 'tab:red', lw=0.8, #alpha=0.6,
                     label='T_ext', rasterized=True)
         axs[1].set_ylabel('Degrees [°C]', fontsize=text_size)
         #axs[1].set_ylim(2., 5.)
