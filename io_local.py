@@ -45,7 +45,7 @@ def read_events_log(data_path):
     Returns pandas.Dataframe
             Dataframe containing atmospheric, marine and error timestamps as pandas.Series.
     """
-    events_df = pd.read_csv(data_path, index_col=0, parse_dates=True),
+    events_df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     ## "marine" ambiant-to_marine (external seafloor pressure) switch 
     times_marine = events_df.Type[events_df.Type == 'Valve movement - Marine'].index[1:]
     ## "ambiant" marine-to-ambiant (zero) switch 
