@@ -158,7 +158,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors=None, title=''
 
 
 def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(600, 1000),
-                      cmap='viridis', figsize=(8, 4)):
+                      ylim=(9., 10.), cmap='viridis', figsize=(8, 4)):
     """
     Subplot calibration sequences of each pressure sensors.
 
@@ -177,6 +177,9 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
         Duration of each zero segment.
     select_window : tuple
         Start and end relative times (in seconds) of the selected stable window.
+        Default values are 600 to 1000 seconds after internal valve switch.
+    ylim : tuple,
+        Internal pressure (barometric) limitation for the y axis. 
     cmap : str
         Matplotlib colormap name.
     """
@@ -185,8 +188,7 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
     cmap_obj = plt.get_cmap(cmap)
     norm = colors.Normalize(vmin=1, vmax=n_calib)
 
-    fig, axs = plt.subplots(
-        1, len(keys), figsize=figsize, sharey=True)
+    fig, axs = plt.subplots(1, len(keys), figsize=figsize, sharey=True)
 
     if len(keys) == 1:
         axs = [axs]
@@ -212,6 +214,7 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
         ax.axvspan(select_window[0], select_window[1], 
                    color='silver', alpha=0.4, zorder=1,)
 
+    axs[0].set_ylabel('Internal pressure [dBar]')
     # Colorbar
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap_obj)
     cbar = fig.colorbar(sm, ax=axs, pad=0.02)
