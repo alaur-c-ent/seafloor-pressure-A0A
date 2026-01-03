@@ -158,7 +158,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors=None, title=''
 
 
 def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(600, 1000),
-                      ylim=(9., 10.), cmap='viridis', figsize=(8, 4)):
+                      ylim=(9.3, 9.8), cmap='viridis', text_size='large', figsize=(8, 4)):
     """
     Subplot calibration sequences of each pressure sensors.
 
@@ -194,10 +194,10 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
         axs = [axs]
 
     for ax, col in zip(axs, keys):
+        ax.tick_params(axis='both', labelsize=text_size)
         ax.grid(which='both', lw=0.4, color='lightgrey', zorder=0)
-        ax.set_xlabel('Elapsed time [s]')
-        ax.set_ylabel('Internal pressure [dBar]')
-        ax.set_title(col)
+        ax.set_xlabel('Elapsed time [s]', fontsize=text_size)
+        ax.set_title(col, fontsize=text_size)
 
         calib_id = 1
         for t in calibration_times:
@@ -214,11 +214,17 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
         ax.axvspan(select_window[0], select_window[1], 
                    color='silver', alpha=0.4, zorder=1,)
 
-    axs[0].set_ylabel('Internal pressure [dBar]')
+    axs[0].set_ylim(*ylim)
+    axs[0].set_ylabel('Internal pressure [dBar]', fontsize=text_size)
     # Colorbar
     sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap_obj)
-    cbar = fig.colorbar(sm, ax=axs, pad=0.02)
-    cbar.set_label('Calibration index')
+    cbar = fig.colorbar(sm, ax=axs[1], pad=0.02)
+    cbar.set_label('Calibration index', fontsize='medium')
+    cbar.ax.tick_params(labelsize='medium') 
+    cbar.ax.invert_yaxis()
+    ## only integer ticks
+    cbar.locator = ticker.MaxNLocator(integer=True, prune=None)  
+    cbar.update_ticks()
 
     fig.tight_layout()
     return fig
