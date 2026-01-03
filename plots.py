@@ -233,7 +233,7 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
 
 
 def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 1000), 
-                    ylim=(9., 10.), highlight_ids=None, colors_code=None, figsize=(10, 8)):
+                    ylim=(9.3, 9.8), highlight_ids=None, colors_code=None, figsize=(10, 8)):
     """
     This function display all zero segments for multiple variables 
     in function of the relative time from valve switch, 
@@ -358,7 +358,7 @@ def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', col
     ax.grid(which='both', lw=0.45, color='lightgrey', zorder=0)
 
     if use_cmap:
-        ### colors_code options 
+        ### Colors options 
         N=len(calib_df)                 
         cmap = plt.cm.viridis  
         # cmap = plt.get_cmap(colormap)
