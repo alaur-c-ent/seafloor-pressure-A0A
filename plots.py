@@ -73,7 +73,8 @@ def plotlog(df, key, events_log, colors=None, title='', plot_log=None, output_pa
         return plt.show()
 
 
-def plot_barometer_and_temperatures(df, calibration_times, colors=None, title='', text_size='large', plot_fig=None, output_path=None, filenamout=None, savefig=None):
+def plot_barometer_and_temperatures(df, calibration_times, colors=None, title='', text_size='large', 
+                                    plot_fig=None, output_path=None, filenamout=None, savefig=None):
     """
     Plot barometric pressure and temperature time series with calibration events.
 
@@ -112,7 +113,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors=None, title=''
         axs[0].set_title(title, fontsize=text_size)
         ## Barometer pressure
         axs[0].plot(df.index, df['Barometer_pressure'], 
-                    linestyle='-', c=colors['BB'] or colors['Barometer_pressure'], lw=1.5,
+                    linestyle='-', c=colors['BB'] or colors['Barometer_pressure'], lw=1.,
                     label='P_barometric', rasterized=True)
         axs[0].set_ylabel('Confined presssure [dBar]', fontsize=text_size)
         #axs[0].set_ylim(9.2, 9.7)
@@ -124,10 +125,10 @@ def plot_barometer_and_temperatures(df, calibration_times, colors=None, title=''
                 linestyle='-', c=colors['BB'] or colors['Barometer_pressure'], lw=0.8, #alpha=0.6,
                     label='T_barom', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_1'], 
-                linestyle='dashed', c=colors['BP1'] or colors['BPR_pressure_1'], lw=0.8, #alpha=0.6,
+                linestyle='dashed', c=get_color_from_name('BPR_temp_1', colors), lw=0.8, #alpha=0.6,
                     label='T_BPR1', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_2'], 
-                linestyle='dashed', c=colors['BP2'] or colors['BPR_pressure_2'], lw=0.8, #alpha=0.6,
+                linestyle='dashed', c=get_color_from_name('BPR_temp_2', colors), lw=0.8, #alpha=0.6,
                     label='T_BPR2', rasterized=True)
         axs[1].plot(df.index, df['External_temp'], 
                 linestyle='-', c=colors['External_temp'] or 'tab:red', lw=0.8, #alpha=0.6,
@@ -185,8 +186,7 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
     norm = colors.Normalize(vmin=1, vmax=n_calib)
 
     fig, axs = plt.subplots(
-        1, len(keys), figsize=figsize, sharey=True
-    )
+        1, len(keys), figsize=figsize, sharey=True)
 
     if len(keys) == 1:
         axs = [axs]
@@ -203,10 +203,8 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
             if seg.empty:
                 calib_id += 1
                 continue
-
             elapsed = seg['time_seconds'] - seg['time_seconds'].iloc[0]
             color = cmap_obj(norm(calib_id))
-
             ax.plot(elapsed, seg[col], color=color, lw=0.8)
             calib_id += 1
 
@@ -308,4 +306,91 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
         ax.set_xlabel('Elapsed time [s]')
 
     fig.tight_layout()
+    return fig
+
+
+
+def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', colors=None, use_cmap=False,
+                            ylim=(0, 20), text_size='large', figsize=(10, 5)):
+    """
+    Plot calibration (drift) curves derived from zero-pressure values.
+
+    Parameters
+    ----------
+    calib_df : pandas.DataFrame
+        DataFrame containing calibration values. Must have 'Date', 'Calib_1', 'Calib_2' named columns.
+    cols : tuple
+        Columns names to plot (default Calib_1, Calib_2).
+    title : str, 
+        Title of the figure. Default is empty title (meaning no title)
+    colors : dict, optional
+        Dictionary defining colors scheme for sensors.
+    use_cmap : bool, optional
+        If True, color points using a colormap as a function of calibration sequences indexes.
+    ylim : tuple, optional
+        Y-axis limits (e.g., (0, 20)). Max drifting is about 20 cm in worst case scenario.
+    """
+
+    if colors is None:
+        colors = {'Calib_1' : 'orange',
+                  'Calib_2' : 'darkgreen',
+                  'Barometer_pressure' : 'violet',
+                  'External_temp' : 'tab:red'}
+        
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+        
+    ax.tick_params(axis='both', labelsize=text_size)
+    ax.set_title(title, fontsize=text_size)
+
+    ax.grid(which='both', lw=0.45, color='lightgrey', zorder=0)
+
+    if use_cmap:
+        ### Colors options 
+        N=len(calib_df)                 
+        cmap = plt.cm.viridis  
+        # cmap = plt.get_cmap(colormap)
+        norm = colors.Normalize(vmin=1, vmax=N)
+
+    for i, col in enumerate(cols):
+        label = col.replace("_", " ")
+        
+        if use_cmap:
+            ax.plot(calib_df.Date, calib_df[col], 
+                color=get_color_from_name(col, colors), 
+                zorder=1, alpha=0.8, linestyle='-',
+                label=label)
+            sc = ax.scatter(calib_df.Date, calib_df[col], 
+                        linestyle='-', marker='o', s=50,
+                        c=calib_df.index, 
+                        cmap=cmap, norm=norm, 
+                        zorder=4)
+        else:
+            ax.plot(calib_df.Date, calib_df[col], 
+                    '-o', c=get_color_from_name(col, colors), 
+                    label=label)
+    if ylim:
+        # ax.set_ylim(*ylim)
+        ax.set_ylim(-ylim[1], ylim[0]) ## max drifting is about 20 cm.
+        
+    # ax.set_xlabel('Dates', fontsize=text_size)
+    ax.set_ylabel(u'Normalised internal presssure [dBar]', fontsize=text_size)
+    ax.legend(loc='lower left')
+
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y')) # fmt “Jan 2025”
+    ax.xaxis.set_minor_locator(mdates.MonthLocator())
+    # ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
+
+
+    if use_cmap:
+        # sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+        # cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+        cbar = fig.colorbar(sc, ax=ax, pad=0.02)
+        cbar.set_label('Calibration index', fontsize='medium')
+        cbar.ax.tick_params(labelsize='medium') 
+        cbar.ax.invert_yaxis()
+        ## only integer ticks
+        cbar.locator = ticker.MaxNLocator(integer=True, prune=None)  
+        cbar.update_ticks()
+
     return fig
