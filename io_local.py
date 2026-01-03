@@ -47,7 +47,7 @@ def read_events_log(data_path):
     """
     events_df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     ## "marine" ambiant-to_marine (external seafloor pressure) switch 
-    times_marine = events_df.Type[events_df.Type == 'Valve movement - Marine'].index[1:]
+    times_marine = events_df.Type[events_df.Type == 'Valve movement - Marine'].index[1:-1]
     ## "ambiant" marine-to-ambiant (zero) switch 
     times_ambi = events_df.Type[events_df.Type == 'Valve movement - Atmospheric'].index 
     times_error  = events_df.Type[events_df.Type == 'Valve movement error'].index
@@ -83,7 +83,7 @@ def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
     df.insert(len(df.iloc[0]), 'Type', 'A')
     df['Type'] = 'A'
     
-    for ta, tm in zip(times_ambi, times_marine[:-1]):
+    for ta, tm in zip(times_ambi, times_marine):
         ### Re-write over the flagged 'A' only for zero-measurments windows we want to keep
         Z_start = ta - pd.Timedelta(seconds=10)
         ### Extract 20 minutes long zeros
