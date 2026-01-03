@@ -161,7 +161,7 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
                         })
         calib_n += 1
   
-    print(f'\nThe total number of calibration segments is: {calib_n}\n')
+    print(f'\nThe total number of calibration segments is: {calib_n-1}\n')
 
     ### Concatenate into a new dataframe 
     calib_df = pd.DataFrame.from_records(results, 
