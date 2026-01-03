@@ -141,3 +141,70 @@ def plot_barometer_and_temperatures(df, calibration_times, colors, title='', tex
             else:
                 print('Ouput path and/or name of the figure are None.')
         return plt.show()
+
+
+def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(600, 1000),
+                      cmap='viridis', figsize=(8, 4)):
+    """
+    Subplot calibration sequences of each pressure sensors.
+
+    This function superposes all zero segments in function of the relative time since valve switch,
+    with color encoding based on the calibration sequence index.
+
+    Parameters
+    ----------
+    zeros_df : pandas.DataFrame
+        DataFrame containing zero segments.
+    calibration_times : array-like
+        Start times of zero-pressure calibration sequences.
+    keys : list
+        List of column names to plot (e.g. BPR pressure 1, 2).
+    window : timedelta
+        Duration of each zero segment.
+    select_window : tuple
+        Start and end relative times (in seconds) of the selected stable window.
+    cmap : str
+        Matplotlib colormap name.
+    """
+
+    n_calib = len(calibration_times)
+    cmap_obj = plt.get_cmap(cmap)
+    norm = colors.Normalize(vmin=1, vmax=n_calib)
+
+    fig, axs = plt.subplots(
+        1, len(keys), figsize=figsize, sharey=True
+    )
+
+    if len(keys) == 1:
+        axs = [axs]
+
+    for ax, col in zip(axs, keys):
+        ax.grid(which='both', lw=0.4, color='lightgrey', zorder=0)
+        ax.set_xlabel('Elapsed time [s]')
+        ax.set_ylabel('Internal pressure [dBar]')
+        ax.set_title(col)
+
+        calib_id = 1
+        for t in calibration_times:
+            seg = zeros_df.loc[t:t+window]
+            if seg.empty:
+                calib_id += 1
+                continue
+
+            elapsed = seg['time_seconds'] - seg['time_seconds'].iloc[0]
+            color = cmap_obj(norm(calib_id))
+
+            ax.plot(elapsed, seg[col], color=color, lw=0.8)
+            calib_id += 1
+
+        # Highlight selected time window
+        ax.axvspan(select_window[0], select_window[1], 
+                   color='silver', alpha=0.4, zorder=1,)
+
+    # Colorbar
+    sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap_obj)
+    cbar = fig.colorbar(sm, ax=axs, pad=0.02)
+    cbar.set_label('Calibration index')
+
+    fig.tight_layout()
+    return fig
