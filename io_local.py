@@ -118,8 +118,8 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
         Dataframe containing only zero-pressure sequences.
     times_ambi : array-like pandas.Series
         Timestamps of marine valve switches.
-    window : int
-        Calibration length in seconds (20 minutes -> 1250 s). 
+    window : pandas.Timedelta
+        Calibration length in seconds (20 minutes -> 1200 s).  
     lim_inf : int
         Relative time in seconds after internal valve switch 
         of the selected stable window to compute calibration value.
