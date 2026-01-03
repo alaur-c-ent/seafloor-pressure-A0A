@@ -21,7 +21,7 @@ def read_A0A_data(data_path):
             Time-indexed dataframe containing both bottom pressures, temperature and barometer data.
     """
     df = pd.read_csv(data_path, parse_dates=True, index_col=0, skiprows=1,
-        usecols=range(7),
+        usecols=range(0, 8, 1),
         names=['Time',
                'BPR_temp_1',
                'BPR_pressure_1',
