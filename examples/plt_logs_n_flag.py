@@ -48,9 +48,8 @@ text_size = 'large'
 
 channels_colors = {'BB': 'violet',
                    'BPR1': 'orange',
-                   'BPR2': 'darkgreen'}
-
-calib_color_ = 'red'
+                   'BPR2': 'darkgreen',
+                   'T_ext' : 'tab:red'}
 
 show_figure = True
 save_figure = True
