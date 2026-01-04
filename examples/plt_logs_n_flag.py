@@ -16,6 +16,9 @@ FLAG zeros segments (calibration sequences) as Z, errors as F and, A, the rest.
 Save clean dataset in txt file format. 
 Resample dataset, save the 1 minute downsampled version only. 
 
+Plot uncorrected cleaned seafloor pressure timeseries. 
+Plot the uncorretected ∆P = BPR2 - BPR1 signal as instrumental control. 
+
 conda activate myrsk
 
 08/2025 — alaurent
@@ -28,8 +31,7 @@ from datetime import date, timedelta
 
 #sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
 from io_local import (read_A0A_data, read_events_log, flag_and_extract_zeros)
-from plots import (plotlog, plot_barometer_and_temperatures)
-
+from plots import (plotlog, plot_barometer_and_temperatures, plot_pressure, plot_deltaP)
 
 ########################################
 #### DEFINE PATHS ####
@@ -40,7 +42,7 @@ station_name = 'A0A_MAY33_R'
 rsk_reference = '208295_20250930_0551'
 rsk_ref_lst = rsk_reference.split('_')
 
-output_path = os.path.join(root_path, recover_date, station_name, 'figures/raw_pressure/')
+output_path = os.path.join(root_path, recover_date, station_name, 'figures/parsing/')
 
 ########################################
 #### OPTIONS & AESTHETICS ####
@@ -127,6 +129,31 @@ def main():
     A0A_1min_df = df_clean.resample('1min').mean() ## not smoothed 1 minute averaged dataset
 
     A0A_1min_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_1min.txt'))
+
+    ######################################
+    #### PLOT UNCORRECTED CLEANED TIMESERIES 
+    #### meaning without calibration sequences
+    outfile = f'Uncorrected_pressure_{station_name}_{today}.pdf'
+    title = f'{station_name} - Plot cleaned uncorrected datasets'
+    print(f'\n{today} -  Plot {title}.\n')
+    plot_pressure(df_clean,
+                  calibration_times=t_atmo,
+                  colors_code=channels_colors,
+                  fig_title=title,
+                  plot_fig=show_figure, output_path=output_path, filenamout=outfile, savefig=save_figure)
+
+    ######################################
+    #### PLOT UNCORRECTED PRESSURE DIFFERENCE (∆P)
+    outfile = f'Uncorrected_deltaP_{station_name}_{today}.pdf'
+    title = u'{} - Uncorrected $\Delta$P = BPR2 - BPR1'.format(station_name)
+    print(f'\n{today} -  Plot {title}.\n')
+    plot_deltaP(df_clean,
+                deltaP=None,
+                calibration_times=t_atmo,
+                show_calibrations=True,
+                title=title,
+                text_size='large',
+                plot_fig=show_figure, output_path=output_path, filenamout=outfile, savefig=save_figure)
 
 
 if __name__ == "__main__":
