@@ -157,6 +157,95 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
         return plt.show()
     
 
+def plot_pressure(clean_df, calibration_times, colors_code=None, fig_title='', text_size='medium', 
+                  plot_fig=None, output_path=None, filenamout=None, savefig=None):
+    """
+    Plot seafloor pressure timeseries.
+
+    This function displays the full pressure time series recorded by the two
+    internal pressure sensors (BPR1 and BPR2), after data cleaning (STEP 1),
+    and overlays the timing of zero-pressure calibration sequences.
+
+    No correction is applied to the data in this plot.
+
+    Parameters
+    ----------
+    clean_df : pandas.DataFrame
+        Time-indexed cleaned pressure dataset (end of STEP 1).
+        Must contain columns:
+        - 'BPR_pressure_1'
+        - 'BPR_pressure_2'
+    calibration_times : array-like
+        Datetime values corresponding to the start times of calibration
+        (zero-pressure) sequences.
+    colors_code : dict, optional
+        Dictionary defining the color scheme for channels.
+        If None, a default color scheme is used.
+    fig_title : str, optional
+        Global title of the figure.
+    text_size : str, optional
+        Font size for labels and titles.
+    plot_fig : bool, optional
+        If True, the figure is created and displayed.
+    output_path : str, optional
+        Directory where the figure is saved (if savefig is True).
+    filenamout : str, optional
+        Output filename for the figure.
+    savefig : bool, optional
+        If True, save the figure to disk.
+
+    Returns (if displayed)
+    -------
+        The function displays the figure and optionally saves it to disk.
+    """
+    if plot_fig:
+        if colors_code is None:
+            colors_code = {'BPR_pressure_1' : 'orange',
+                      'BPR_pressure_2' : 'darkgreen',
+                      'Barometer_pressure' : 'violet',
+                      'External_temp' : 'tab:red'}
+            
+        fig, axs = plt.subplots(2, 1, sharex=True, constrained_layout=True)
+
+        axs[0].set_title(f'Paros 1 (BPR1)', loc='left') #, fontsize=text_size)
+        axs[0].plot(clean_df.index, (clean_df['BPR_pressure_1'].values), # this way make it less longer to plot if large dataset
+                c=get_color_from_name('BPR_pressure_1', colors_code), 
+                label = 'Uncorrected pressure', 
+                rasterized=True, lw=0.8, zorder=2)
+
+        axs[1].set_title(f'Paros 2 (BPR2)', loc='left') #, fontsize=text_size)
+        axs[1].plot(clean_df.index, (clean_df['BPR_pressure_2'].values), 
+                c=get_color_from_name('BPR_pressure_2', colors_code), 
+                label = 'Uncorrected pressure', 
+                rasterized=True, lw=0.8, zorder=2)
+
+        axs[-1].set_xlim(clean_df.index[0]-timedelta(days=2), 
+                         clean_df.index[-1]+timedelta(days=4))
+        axs[-1].xaxis.set_major_locator(mdates.YearLocator())
+        axs[-1].xaxis.set_major_formatter(mdates.DateFormatter('%b %Y')) # fmt “Jan 2025”
+        axs[-1].xaxis.set_minor_locator(mdates.MonthLocator())
+        axs[-1].xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
+        # axs[-1].set_xlabel('Dates')#, labelsize=text_size)
+
+        for _ax in axs:
+            for i, t in enumerate(calibration_times):
+                    _ax.axvline(t, color='tomato', lw=0.8, zorder=1, alpha=0.8, 
+                                label='Calib.' if i == 0 else '')
+            _ax.set_ylabel('Seafloor pressure [dBar]') #, labelsize=text_size)
+            _ax.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
+            _ax.tick_params(axis='both') #, labelsize=text_size)
+            _ax.legend(loc='upper right', labelspacing=0.05)
+
+        fig.suptitle(fig_title)
+
+        if savefig:
+            if output_path is not None and filenamout is not None:
+                plt.savefig(os.path.join(output_path, filenamout), dpi=300)
+            else:
+                print('Ouput path and/or name of the figure are None.')
+        return plt.show()
+        
+
 def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(600, 1000),
                       ylim=(9., 10.), cmap='viridis', text_size='large', figsize=(8, 4)):
     """
