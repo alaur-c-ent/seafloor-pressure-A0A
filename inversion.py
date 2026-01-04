@@ -16,7 +16,7 @@ from numpy.linalg import inv
 def invert_Jmatrix(time_s, tau_grid, calib, maxfev):
     """
     Invert exponential + linear drift model using a grid search on tau
-    and linear least squares for remaining parameters.
+    and linear least squares for remaining parameters (a, b, d).
 
     Parameters
     ----------
@@ -47,7 +47,7 @@ def invert_Jmatrix(time_s, tau_grid, calib, maxfev):
         J[:, 2] = np.exp(-time_s/tau_) #+ b*time_s + d  # Exponenial decay
         invN = inv(J.T @ J)                             # Invert direct norm matrix
         params = invN @ J.T @ np.array(calib)           # Model parameters = [d, b, a]
-        V = calib - J @ X                               # Residuals
+        V = calib - J @ params                          # Residuals
         var = V.T @ V / (len(time_s) - M)               # Residuals variance 
         res_var[i] = var                                # Store error of the corresponding tau value 
 
@@ -57,7 +57,7 @@ def invert_Jmatrix(time_s, tau_grid, calib, maxfev):
     J[:, 2] = np.exp(-time_s/best_tau)
     invN = inv(J.T @ J)  
     params = invN @ J.T @ np.array(calib)
-    V = calib - J @ X
+    V = calib - J @ params
     var = V.T @ V / (len(time_s) - M)  
 
     return params, best_tau
