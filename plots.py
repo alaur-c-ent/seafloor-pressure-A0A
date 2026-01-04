@@ -26,6 +26,8 @@ def plotlog(df, key, events_log, colors_code=None, title='', plot_log=None, outp
     """
     Plot raw A0A pressure timeseries with events extracted from log.
 
+    This function was initially made by Y.-T. Tranchant (https://orcid.org/0000-0002-7568-4123).
+
     Parameters
     ----------
     df : pandas.DataFrame
@@ -119,8 +121,6 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
         # axs[0].set_ylim(9.3, 9.4)
 
         ## TemperatureS
-        for t in calibration_times:
-            axs[1].axvline(t, color='r', lw=0.8, zorder=1) #, alpha=0.8)
         axs[1].plot(df.index, df['Barometer_temp'], 
                 linestyle='-', c=colors_code['BB'] or colors_code['Barometer_pressure'], lw=0.8, #alpha=0.6,
                     label='T_barom', rasterized=True)
@@ -140,7 +140,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
         for _ax in axs:
             _ax.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
             for i, t in enumerate(calibration_times):
-                _ax.axvline(t, color='r', lw=0.8, zorder=1, alpha=0.8, label='Calib.' if i == 0 else '')
+                _ax.axvline(t, color='tomato', lw=0.8, zorder=1, alpha=0.8, label='Calib.' if i == 0 else '')
                 axs[0].annotate(f'{i+1}', 
                             xy=(t, np.max(df['Barometer_pressure']+0.01)), 
                             textcoords='data', 
@@ -244,7 +244,101 @@ def plot_pressure(clean_df, calibration_times, colors_code=None, fig_title='', t
             else:
                 print('Ouput path and/or name of the figure are None.')
         return plt.show()
-        
+
+
+def plot_deltaP(clean_df, deltaP=None, calibration_times=None, show_calibrations=True, 
+                title='', text_size='medium', 
+                plot_fig=None, output_path=None, filenamout=None, savefig=None):
+    """
+    Plot differential pressure timeseries (ΔP = BPR2 − BPR1).
+
+    This function displays the time series of differential pressure between
+    the two internal pressure sensors, either computed directly from the
+    cleaned dataset or provided explicitly by the user.
+
+    The plot is intended as a diagnostic tool to assess:
+    - relative sensor drift,
+    - inter-sensor consistency, 
+    - temporal behavior of ΔP with respect to calibration sequences.
+
+    No correction is applied to the data.
+
+    Parameters
+    ----------
+    clean_df : pandas.DataFrame
+        Time-indexed cleaned pressure dataset (end of STEP 1).
+        Must contain columns:
+        - 'BPR pressure 1'
+        - 'BPR pressure 2'
+    deltaP : pandas.Series or numpy.ndarray, optional
+        Differential pressure time series. If None, ΔP is computed as
+        BPR2 minus BPR1.
+    calibration_times : array-like, optional
+        Datetime values corresponding to the start times of calibration
+        (zero-pressure) sequences.
+    show_calibrations : bool, optional
+        If True, display vertical lines indicating calibration sequences.
+    title : str, optional
+        Title of the figure.
+    text_size : str, optional
+        Font size for labels and titles.
+    plot_fig : bool, optional
+        If True, the figure is created and displayed.
+    output_path : str, optional
+        Directory where the figure is saved (if savefig is True).
+    filenamout : str, optional
+        Output filename for the figure.
+    savefig : bool, optional
+        If True, save the figure to disk.
+
+    Returns (if displayed)
+    -------
+        The function displays the figure and optionally saves it to disk.
+    """
+    if plot_fig:
+
+         ### Compute ΔP if not provided
+         ### WARNING BPR2 - BPR1 (always)
+        if deltaP is None:
+            deltaP = np.array(clean_df['BPR_pressure_2'].values - clean_df['BPR_pressure_1'].values)
+        else:
+            ### Check length consistency
+            if len(deltaP) != len(clean_df.index):
+                raise ValueError(
+                    f'Length mismatch: provided deltaP has length {len(deltaP)}, '
+                    f'but clean_df has {len(clean_df.index)} samples.')
+
+        fig =  plt.figure(figsize =(8,4))
+
+        plt.title(title, fontsize=text_size)
+        plt.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
+        plt.plot(clean_df.index, deltaP, 
+                c='tab:blue', # uncorrected delta_P always in tab:blue
+                label =  u'raw $\Delta$P',
+                rasterized=True, lw=0.8, zorder=2)
+
+        ### if display calib is True
+        if show_calibrations and calibration_times is not None:
+            for i, t in enumerate(calibration_times):
+                    plt.axvline(t, color='tomato', lw=0.8, zorder=1, alpha=0.8, 
+                                label='Calib. sequence' if i == 0 else '')
+
+        plt.xlim(clean_df.index[0]-timedelta(days=2), 
+                         clean_df.index[-1]+timedelta(days=2))
+        xlocs, _ = plt.xticks()  # Get the current locations and labels.
+        plt.xticks(ticks=xlocs[::2])
+        plt.xlabel('Dates', labelsize=text_size)
+        plt.tick_params(axis='both', labelsize=text_size)
+        plt.ylabel(r'$\Delta$ presssure [dBar]', fontsize=text_size)
+        plt.legend(loc='lower center', ncol=2, labelspacing=0.2)
+
+        if savefig:
+            if output_path is not None and filenamout is not None:
+                plt.savefig(os.path.join(output_path, filenamout), dpi=300)
+            else:
+                print('Ouput path and/or name of the figure are None.')
+        return plt.show()
+
 
 def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(600, 1000),
                       ylim=(9., 10.), cmap='viridis', text_size='large', figsize=(8, 4)):
