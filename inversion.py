@@ -15,14 +15,24 @@ from numpy.linalg import inv
 
 def invert_Jmatrix(time_s, tau_grid, calib, maxfev):
     """
-    Invert the regression matrix to find the best a, b, d parameters
-    and to explore the exponential decay slope: tau
-    Initially made by A. Duvernay. 
+    Invert exponential + linear drift model using a grid search on tau
+    and linear least squares for remaining parameters.
 
-    This is an adapted Gauss–Newton method 
-    tau_grid : search grid for the exponential decay parameter
-    time_s : time vector (in seconds)
-    calib : calibration dataset (observations)
+    Parameters
+    ----------
+    tau_grid : 
+        Grid for the exponential decay parameter
+    time_s : 
+        Time vector (in seconds)
+    calib : 
+        calibration dataset (observations)
+    
+    Returns
+    -------
+    params : ndarray
+        Model parameters [d, b, a]
+    best_tau : float
+        Optimal relaxation time.
     """
     # ## Initate storage of residual variance
     res_var = np.zeros(maxfev)
@@ -36,7 +46,7 @@ def invert_Jmatrix(time_s, tau_grid, calib, maxfev):
     for i, tau_ in enumerate(tau_grid):
         J[:, 2] = np.exp(-time_s/tau_) #+ b*time_s + d  # Exponenial decay
         invN = inv(J.T @ J)                             # Invert direct norm matrix
-        X = invN @ J.T @ np.array(calib)                # Models coefficients X = [d, b, a]
+        params = invN @ J.T @ np.array(calib)           # Model parameters = [d, b, a]
         V = calib - J @ X                               # Residuals
         var = V.T @ V / (len(time_s) - M)               # Residuals variance 
         res_var[i] = var                                # Store error of the corresponding tau value 
@@ -46,10 +56,10 @@ def invert_Jmatrix(time_s, tau_grid, calib, maxfev):
     ### Invert again to find a, b, d parameters in adequation to the best tau value
     J[:, 2] = np.exp(-time_s/best_tau)
     invN = inv(J.T @ J)  
-    X = invN @ J.T @ np.array(calib)
+    params = invN @ J.T @ np.array(calib)
     V = calib - J @ X
     var = V.T @ V / (len(time_s) - M)  
 
-    return X, best_tau
+    return params, best_tau
 
 
