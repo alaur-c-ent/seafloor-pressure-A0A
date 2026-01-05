@@ -16,14 +16,15 @@ Each instrument integrates **three pressure sensors**:
 Periodical switches of the external sensors between seawater pressure and the internal atmospheric reference, producing so-called **zero-pressure sequences**. These sequences enable in situ estimation of instrumental drift.
 
 Additional internal and external temperature sensors monitor thermal conditions
-of both the seawater and the instrument housing, supporting drift analysis and quality control.
+of both the seawater and the instrument housing, supporting drift analysis and background control.
 
 These instruments have been deployed in volcano-tectonically active regions, notably within the framework of the REVOSIMA observatory, between 2020 and 2025, to monitor the ongoing seismo-volcanic crisis.
 The main objective is to detect vertical seafloor deformation in active submarine environments by processing raw absolute pressure records. This includes:
-- extracting and correcting instrumental drift using in situ self-calibration (zero pressure) sequences,
+- extracting instrumental drift using in situ self-calibration (zero pressure) sequences,
 - modelling drift curves using a least square regression.
 - validating drift correction through differential pressure (∆P) computed between co-located sensors within the same instrument. 
-Oceanic variations  is only partially addressed at this stage.  In the current version, tidal signals are removed using **UTide**, while other oceanographic contributions (currents, etc) are not yet corrected.
+
+Oceanic variations is only partially addressed at this stage as only tides signals are removed using **UTide**, while other oceanographic contributions (currents, etc) are not yet corrected.
 
 The codes are primarily intended for long-term deployments (typically ~12 months). According to RBR Ltd. manufacturer specifications, pressure sensors are capable of resolving millimeter-scale vertical seafloor motions
 
@@ -32,14 +33,15 @@ The codes are primarily intended for long-term deployments (typically ~12 months
 
 Seafloor pressure gauges provide a direct proxy for vertical ground motion, with approximately 1 dbar corresponding to 1 m of water column height. However, the detectability of slow or small-amplitude deformation is limited by:
 - instrumental drift of quartz pressure sensors,
-- instrumental artifacts (e.g. pressure jumps),
-- ocean dynamic signals (tides, currents, regional variability, etc).
+- instrumental artifacts,
+- ocean dynamic signals.
 The A0A method addresses part of these limitations by performing periodic in situ zero-pressure measurements, enabling the estimation of each sensors drift during deployment. Zero-pressure measurements are used to correct raw seafloor pressure signals from drift.
 
 This repository implements processing strategies developed and applied to recent A0A deployments in active submarine settings, including:
 - long-term monitoring in the Mayotte region within the framework of the
   **REVOSIMA** observatory,
 - deployments along the South-East Indian Ridge east of New Amsterdam Island.
+
 ---
 ## Scope of the repository
 
@@ -50,12 +52,13 @@ This repository includes tools for:
 - modelling instrumental drift (least square regression method),
 - correcting seafloor pressure records from instrumental drift,
 - computing pressure differences between co-located sensors (ΔP),
-- preparing cleaned time series for further analysis.
+- correcting from tides signal,
+- preparing cleaned and corrected time series for further analysis.
 
-The repository **does not** aim at providing:
+The repository **does not** aim at providing yet:
 - a turnkey operational processing chain,
 - real-time processing tools,
-- finalised oceanographic corrections (advanced tide or circulation models).
+- finalised oceanographic corrections (advanced tides or circulation models).
 
 ---
 ## Data policy
@@ -88,7 +91,7 @@ Users are strongly encouraged to:
 ---
 ## References
 
-Key references underlying the methodology include:
+Key references underlying the A0A pressure gauge and drift-correction methodology include:
 
 * Bürgmann, R., & Chadwell, D. (2014).
   *Seafloor Geodesy.*
@@ -130,7 +133,7 @@ under the same license.
 ---
 ## Acknowledgements
 
-The author thanks Pierre Sakic (IPGP) for his  contributions to the development of seafloor geodetic processing tools and for insightful discussions that indirectly supported the work presented in this repository.
+The author thanks Pierre Sakic (IPGP) for his knowledges about the development of seafloor geodetic processing tools and for insightful discussions that indirectly supported the work presented in this repository.
 
 ---
 ## Citation
@@ -147,10 +150,10 @@ Associated scientific article is referenced as :
 ---
 ## Contact
 
-For questions, comments or suggestions about the code, please contact:
+For questions, comments or suggestions about the scripts, please contact:
 
 - Angèle Laurent (anlaurent@ipgp.fr) 
-  (sismo-volcanology, geophysical marine)
+  (post-doc researcher at OVPF-IPGP, part of the REVOSIMA consortium)
 
 For questions about the instrument, please contact :
 - Valérie Ballu (valerie.ballu@univ-lr.fr)
