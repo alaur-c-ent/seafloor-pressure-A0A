@@ -108,7 +108,7 @@ def main():
     A0A_clean_df['BPR_dedrift_1'] = A0A_clean_df['BPR_pressure_1'].values - BPR1_model_explin.to_numpy()
     A0A_clean_df['BPR_dedrift_2'] = A0A_clean_df['BPR_pressure_2'].values - BPR2_model_explin.to_numpy()
 
-    print()
+    print(f'\n {today} - Drift corrected pressure datasets\n')
     print(A0A_clean_df.head())
     print()
 
