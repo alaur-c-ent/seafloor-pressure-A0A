@@ -18,6 +18,7 @@ Periodical switches of the external sensors between seawater pressure and the in
 Additional internal and external temperature sensors monitor thermal conditions
 of both the seawater and the instrument housing, supporting drift analysis and quality control.
 
+These instruments have been deployed in volcano-tectonically active regions, notably within the framework of the REVOSIMA observatory, between 2020 and 2025, to monitor the ongoing seismo-volcanic crisis.
 The main objective is to detect vertical seafloor deformation in active submarine environments by processing raw absolute pressure records. This includes:
 - extracting and correcting instrumental drift using in situ self-calibration (zero pressure) sequences,
 - modelling drift curves using a least square regression.
