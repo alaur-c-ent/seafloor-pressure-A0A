@@ -250,7 +250,7 @@ def plot_pressure(clean_df, keys, calibration_times=None, show_calibrations=True
         return plt.show()
 
 
-def plot_deltaP(clean_df, deltaP=None, calibration_times=None, show_calibrations=True, 
+def plot_deltaP(clean_df, keys, deltaP=None, calibration_times=None, show_calibrations=True, 
                 title='', text_size='medium', 
                 plot_fig=None, output_path=None, filenamout=None, savefig=None):
     """
@@ -271,9 +271,8 @@ def plot_deltaP(clean_df, deltaP=None, calibration_times=None, show_calibrations
     ----------
     clean_df : pandas.DataFrame
         Time-indexed cleaned pressure dataset (end of STEP 1).
-        Must contain columns:
-        - 'BPR pressure 1'
-        - 'BPR pressure 2'
+    keys : str
+        Name of the column to plot (e.g., 'BPR_pressure_1', 'BPR_dedrift_1' etc)
     deltaP : pandas.Series or numpy.ndarray, optional
         Differential pressure time series. If None, ΔP is computed as
         BPR2 minus BPR1.
@@ -304,7 +303,7 @@ def plot_deltaP(clean_df, deltaP=None, calibration_times=None, show_calibrations
          ### Compute ΔP if not provided
          ### WARNING BPR2 - BPR1 (always)
         if deltaP is None:
-            deltaP = np.array(clean_df['BPR_pressure_2'].values - clean_df['BPR_pressure_1'].values)
+            deltaP = np.array(clean_df[keys[1]].values - clean_df[keys[0]].values)
         else:
             ### Check length consistency
             if len(deltaP) != len(clean_df.index):
@@ -316,11 +315,22 @@ def plot_deltaP(clean_df, deltaP=None, calibration_times=None, show_calibrations
 
         plt.title(title, fontsize=text_size)
         plt.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
-        plt.plot(clean_df.index, deltaP, 
-                c='tab:blue', # uncorrected delta_P always in tab:blue
-                label =  u'raw $\Delta$P',
-                rasterized=True, lw=0.8, zorder=2)
-
+        if 'drift' in keys[0]:
+            plt.plot(clean_df.index, deltaP, 
+                    c='black', # dedrifted delta_P always in black
+                    label =  u'dedrifted $\Delta$P',
+                    rasterized=True, lw=0.8, zorder=2)
+        elif 'tide' in keys[0]:
+            plt.plot(clean_df.index, deltaP, 
+                    c='grey', # detided delta_P always in grey
+                    label =  u'detided $\Delta$P',
+                    rasterized=True, lw=0.8, zorder=2)
+        else: 
+            plt.plot(clean_df.index, deltaP, 
+                    c='tab:blue', # uncorrected delta_P always in tab:blue
+                    label =  u'raw $\Delta$P',
+                    rasterized=True, lw=0.8, zorder=2)
+            
         ### if display calib is True
         if show_calibrations and calibration_times is not None:
             for i, t in enumerate(calibration_times):
@@ -331,10 +341,11 @@ def plot_deltaP(clean_df, deltaP=None, calibration_times=None, show_calibrations
                          clean_df.index[-1]+timedelta(days=2))
         xlocs, _ = plt.xticks()  # Get the current locations and labels.
         plt.xticks(ticks=xlocs[::2])
-        plt.xlabel('Dates', labelsize=text_size)
+        # plt.xlabel('Dates', labelsize=text_size)
         plt.tick_params(axis='both', labelsize=text_size)
         plt.ylabel(r'$\Delta$ presssure [dBar]', fontsize=text_size)
         plt.legend(loc='lower center', ncol=2, labelspacing=0.2)
+        plt.tight_layout()
 
         if savefig:
             if output_path is not None and filenamout is not None:
