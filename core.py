@@ -207,3 +207,27 @@ def save_drift_model(params, sensor_name, model_name, today, pathout):
 
     with open(pathout, 'w') as f:
         json.dump(model_dict, f, indent=2)
+
+
+def load_drift_model(filepath):
+    """
+    Load drift model parameters from a JSON file.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the JSON drift model file.
+
+    Returns
+    -------
+    model : dict
+        Dictionary containing:
+        - 'model' : model name
+        - 'sensor' : sensor identifier
+        - 'params' : dict with a, tau, b, d
+        - 'units' : units of parameters
+    """
+    with open(filepath, 'r') as f:
+        model = json.load(f)
+
+    return model
