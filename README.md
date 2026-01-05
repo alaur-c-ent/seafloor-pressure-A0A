@@ -13,20 +13,22 @@ Each instrument integrates **three pressure sensors**:
 - **one internal barometric pressure sensor**, measuring the pressure inside a
   sealed atmospheric cylinder.
 
-Periodical switches of the external sensors between seawater pressure and the internal atmospheric reference, producing so-called **zero-pressure sequences**. These sequences enable in situ estimation of instrumental drift.
+This repository implements processing strategies developed and applied to recent A0A deployments in active submarine settings, including:
+- long-term monitoring in the Mayotte region within the framework of the
+  **REVOSIMA** observatory,
+- deployments along the South-East Indian Ridge east of New Amsterdam Island.
 
-Additional internal and external temperature sensors monitor thermal conditions
-of both the seawater and the instrument housing, supporting drift analysis and background control.
-
-These instruments have been deployed in volcano-tectonically active regions, notably within the framework of the REVOSIMA observatory, between 2020 and 2025, to monitor the ongoing seismo-volcanic crisis.
-The main objective is to detect vertical seafloor deformation in active submarine environments by processing raw absolute pressure records. This includes:
+The repository provides research-grade tools to process raw A0A pressure records into drift- and tide-corrected time series suitable for geophysical analysis. This includes:
 - extracting instrumental drift using in situ self-calibration (zero pressure) sequences,
 - modelling drift curves using a least square regression.
 - validating drift correction through differential pressure (∆P) computed between co-located sensors within the same instrument. 
 
-Oceanic variations is only partially addressed at this stage as only tides signals are removed using **UTide**, while other oceanographic contributions (currents, etc) are not yet corrected.
+Exemples are provided for each step of the applied corretion process from raw (uncorrected) pressure to drift and tide corrected records. 
 
-The codes are primarily intended for long-term deployments (typically ~12 months). According to RBR Ltd. manufacturer specifications, pressure sensors are capable of resolving millimeter-scale vertical seafloor motions
+Oceanic variations is only partially addressed at this stage as only tides signals are removed using **UTide**, while other oceanographic contributions are not yet corrected.
+
+The codes are primarily intended for long-term deployments (typically ~12 months). 
+
 
 ---
 ## Scientific context
@@ -35,12 +37,7 @@ Seafloor pressure gauges provide a direct proxy for vertical ground motion, with
 - instrumental drift of quartz pressure sensors,
 - instrumental artifacts,
 - ocean dynamic signals.
-The A0A method addresses part of these limitations by performing periodic in situ zero-pressure measurements, enabling the estimation of each sensors drift during deployment. Zero-pressure measurements are used to correct raw seafloor pressure signals from drift.
-
-This repository implements processing strategies developed and applied to recent A0A deployments in active submarine settings, including:
-- long-term monitoring in the Mayotte region within the framework of the
-  **REVOSIMA** observatory,
-- deployments along the South-East Indian Ridge east of New Amsterdam Island.
+The A0A method mitigates part of these limitations by performing periodic in situ zero-pressure measurements, enabling the estimation of each sensors drift during deployment. Zero-pressure measurements (internal vave rotation into the instrument housing) are then used to correct raw seafloor pressure signals from drift.
 
 ---
 ## Scope of the repository
@@ -59,6 +56,34 @@ The repository **does not** aim at providing yet:
 - a turnkey operational processing chain,
 - real-time processing tools,
 - finalised oceanographic corrections (advanced tides or circulation models).
+
+---
+## Processing workflow
+
+The processing strategy implemented in this repository follows a modular,
+stepwise approach:
+
+- STEP 1 – Parsing and quality control of raw A0A data
+  - reading raw pressure, temperature and barometric records,
+  - identification of calibration (zero-pressure) sequences,
+  - flagging and extraction of valid data segments.
+
+- STEP 2 – In situ calibration and drift estimation
+  - extraction of calibration sequences (zero-pressure measurements),
+  - computation of per sequence calibration values,
+  - control by differential pressure (ΔP) signal.
+
+- STEP 3 – Correction of pressure records
+  - STEP 3.1: modelling of instrumental drift using exponential + linear regression,
+  - STEP 3.2: correction of long-term drift on pressure time series,
+  - STEP 3.3: removal of tidal signals using harmonic analysis (UTide).
+
+The exponential + linear drift models implemented here are directly applied
+to long-term deployments and subsequently used to correct full-resolution
+pressure time series prior to tidal analysis.
+
+The output consists of cleaned, drift and tide corrected pressure records
+ready to be published and/or pursue geophysical/oceanogrpahic analysis.
 
 ---
 ## Data policy
