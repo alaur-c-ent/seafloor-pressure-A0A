@@ -652,6 +652,7 @@ def plot_res_tides(df, keys, legend_txt, tide_offset=1, colors_code=None, figsiz
     for key, ax in zip(keys, axs):
         n_cha = key[-1]
         
+        ax.grid(which='both', axis='x', lw=0.5, alpha=0.45, zorder=0)
         ax.plot(df.index, df[key], 
                     lw=0.7, c='lightgrey', rasterized=True,
                     label=legend_txt+f' BPR{n_cha}')
@@ -659,7 +660,7 @@ def plot_res_tides(df, keys, legend_txt, tide_offset=1, colors_code=None, figsiz
         ax.legend(loc='upper left', labelspacing=0.4, fontsize=text_size)
         
         ax_right = ax.twinx()
-        ax_right.grid(which='both', lw=0.5, alpha=0.45, zorder=0)
+        ax_right.grid(which='both', axis='y', lw=0.5, alpha=0.45, zorder=0)
         ax_right.plot(df.index, df[f'BPR_detided_{n_cha}'],
                     c=get_color_from_name(key, colors_code), 
                     rasterized=True,
