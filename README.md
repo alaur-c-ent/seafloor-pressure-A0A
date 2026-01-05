@@ -11,7 +11,7 @@ Each instrument integrates **three pressure sensors**:
 - **two external Paroscientific Digiquartz pressure recorders**, measuring
   seafloor pressure,
 - **one internal barometric pressure sensor**, measuring the pressure inside a
-  sealed atmospheric chamber.
+  sealed atmospheric cylinder.
 
 Periodical switches of the external sensors between seawater pressure and the internal atmospheric reference, producing so-called **zero-pressure sequences**. These sequences enable in situ estimation of instrumental drift.
 
