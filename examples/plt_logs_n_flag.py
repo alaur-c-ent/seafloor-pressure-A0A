@@ -31,7 +31,7 @@ from datetime import date, timedelta
 
 #sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
 from src.A0A.core import (read_A0A_data, read_events_log, flag_and_extract_zeros)
-from plots import (plotlog, plot_barometer_and_temperatures, plot_pressure, plot_deltaP)
+from src.A0A.plots import (plotlog, plot_barometer_and_temperatures, plot_pressure, plot_deltaP)
 
 ########################################
 #### DEFINE PATHS ####
