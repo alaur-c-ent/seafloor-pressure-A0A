@@ -115,18 +115,18 @@ def main():
 
     ######################################
     ##### FLAGs WINDOWS AS AMBIANT (A), ZEROS (Z) or FALSE (to be removed)
-    zeros_df, df_clean = flag_and_extract_zeros(A0A_df,  t_marine, t_atmo, t_error)
+    zeros_df, A0A_clean_df = flag_and_extract_zeros(A0A_df,  t_marine, t_atmo, t_error)
 
     ######################################
     #### WRITE CLEANED DATASETS
     #### Zeros and NO-ZEROS dataset outputs
     zeros_df.to_csv(os.path.join(root_path, recover_date, station_name, f"{station_name}_zeros.csv"))
-    df_clean.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_data_clean.txt'))
+    A0A_clean_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_data_clean.txt'))
 
     #### Downsampling the data to minutes, hours and days
-    daily_mean_df = df_clean.resample('1D').mean() ## not smoothed daily mean
-    # A0A_1min_df = df_clean.resample('1H').mean() ## not smoothed 1 hour averaged dataset
-    A0A_1min_df = df_clean.resample('1min').mean() ## not smoothed 1 minute averaged dataset
+    # daily_df = A0A_clean_df.resample('1D').mean() ## not smoothed daily mean
+    # hourly_df = A0A_clean_df.resample('1H').mean() ## not smoothed 1 hour averaged dataset
+    A0A_1min_df = A0A_clean_df.resample('1min').mean() ## not smoothed 1 minute averaged dataset
 
     A0A_1min_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_1min.txt'))
 
@@ -149,7 +149,7 @@ def main():
     outfile = f'Uncorrected_deltaP_{station_name}_{today}.pdf'
     title = u'{} - Uncorrected $\Delta$P = BPR2 - BPR1'.format(station_name)
     print(f'\n{today} -  Plot {title}.\n')
-    plot_deltaP(df_clean,
+    plot_deltaP(A0A_clean_df,
                 keys=('BPR_pressure_1', 'BPR_pressure_2'),
                 deltaP=None,
                 calibration_times=t_atmo,
