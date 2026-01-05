@@ -606,3 +606,80 @@ def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', col
 
     return fig
 
+
+def plot_res_tides(df, keys, legend_txt, tide_offset=1, colors_code=None, figsize=(12, 6), text_size='medium'):
+    """
+    Plot detided (tidal residual) pressure timeseries.
+
+    For each selected pressure channel, plot compare the original
+    pressure time series together with its tidal residual obtained after
+    harmonic tidal analysis (e.g., UTide). 
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Time-indexed dataFrame containing pressure time series and detided signal.
+    keys : list of str
+        List of column names corresponding to raw pressure signals
+        (e.g. 'BPR_pressure_1' or 'BPR_dedrift_1').
+    legend_txt : str
+        Legend label associated with the original pressure time series.
+    tide_offset : float, optional
+        Vertical padding applied to the detided residual y-axis limits,
+        to improve visual separation of the residual signal (default: 1 meter).
+    colors_code : dict, optional
+        Dictionary mapping color scheme to pressure sensors.
+        If None, a default color scheme is used.
+    figsize : tuple, optional
+        Figure size passed to matplotlib (default: (12, 6)).
+    text_size : str, optional
+        Font size used for labels and legends (default: 'medium').
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The matplotlib figure object containing the plot.
+    """
+
+    if colors_code is None:
+        colors_code = {'BPR_pressure_1' : 'orange',
+                        'BPR_pressure_2' : 'darkgreen',
+                        'Barometer_pressure' : 'violet',
+                        'External_temp' : 'tab:red'}
+        
+    fig, axs = plt.subplots(1, len(keys), figsize=figsize, sharey=True, constrained_layout=True)
+
+    for key, ax in zip(keys, axs):
+        n_cha = key[-1]
+        
+        ax.plot(df.index, df[key], 
+                    lw=0.7, c='lightgrey', rasterized=True,
+                    label=legend_txt+f' BPR{n_cha}')
+        
+        ax.legend(loc='upper left', labelspacing=0.4, fontsize=text_size)
+        
+        ax_right = ax.twinx()
+        ax_right.grid(which='both', lw=0.5, alpha=0.45, zorder=0)
+        ax_right.plot(df.index, df[f'BPR_detided_{n_cha}'],
+                    c=get_color_from_name(key, colors_code), 
+                    rasterized=True,
+                    label=f'Residual detided BPR{n_cha}')
+        ax_right.tick_params(axis='both', labelsize=text_size)
+        ax_right.set_ylim(np.min(df[f'BPR_detided_{n_cha}'])-tide_offset, 
+                        np.max(df[f'BPR_detided_{n_cha}'])+tide_offset)
+        ax_right.legend(loc='lower right', labelspacing=0.4, fontsize=text_size)
+
+        if n_cha == '1':
+            ax.set_ylabel('Pressure [dBar]', fontsize=text_size)
+            ax_right.set_yticklabels([])
+        else: 
+            ax.set_ylabel('')
+            ax_right.set_ylabel('Pressure [dBar] - Water Heights [m]', fontsize=text_size)
+
+        ax.tick_params(axis='both', labelsize=text_size)
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b\n%Y')) # fmt “Jan 2025”
+        ax.xaxis.set_minor_locator(mdates.MonthLocator())
+        ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b')) 
+
+    return fig
