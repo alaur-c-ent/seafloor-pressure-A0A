@@ -136,8 +136,10 @@ def main():
     outfile = f'Uncorrected_pressure_{station_name}_{today}.pdf'
     title = f'{station_name} - Plot cleaned uncorrected datasets'
     print(f'\n{today} -  Plot {title}.\n')
-    plot_pressure(df_clean,
+    plot_pressure(A0A_clean_df,
+                  keys=('BPR_pressure_1', 'BPR_pressure_2'),
                   calibration_times=t_atmo,
+                  show_calibrations=False, 
                   colors_code=channels_colors,
                   fig_title=title,
                   plot_fig=show_figure, output_path=output_path, filenamout=outfile, savefig=save_figure)
@@ -148,6 +150,7 @@ def main():
     title = u'{} - Uncorrected $\Delta$P = BPR2 - BPR1'.format(station_name)
     print(f'\n{today} -  Plot {title}.\n')
     plot_deltaP(df_clean,
+                keys=('BPR_pressure_1', 'BPR_pressure_2'),
                 deltaP=None,
                 calibration_times=t_atmo,
                 show_calibrations=True,
