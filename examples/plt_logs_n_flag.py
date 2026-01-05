@@ -40,7 +40,6 @@ recover_date = '2025_09_30'
 station_name = 'A0A_MAY33_R'
 # nbr_deploy = 8 ### 8th deployment of A0A
 rsk_reference = '208295_20250930_0551'
-rsk_ref_lst = rsk_reference.split('_')
 
 output_path = os.path.join(root_path, recover_date, station_name, 'figures/parsing/')
 
