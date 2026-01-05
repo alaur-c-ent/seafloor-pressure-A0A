@@ -63,3 +63,53 @@ def invert_Jmatrix(time_s, tau_grid, calib, maxfev):
     return params, best_tau
 
 
+def fit_drift_curve(calib_df, col, tau_grid, time_col='Date', maxfev=1000):
+    """
+    Fit an exponential + linear drift model to a calibration curve.
+
+    Parameters
+    ----------
+    calib_df : pandas.DataFrame
+        Calibration DataFrame (output of STEP 2).
+    col : str
+        Name of the column to fit (e.g. 'Calib_1', 'BPR_pressure_1').
+    tau_grid : array-like
+        Grid of tau values (in seconds) explored for the exponential decay.
+    time_col : str, optional
+        Column containing dates vector.
+    maxfev : int, optionnal
+        Number of iteration on tau parameter. Default is 1000.
+    Returns
+    -------
+    result : dict
+        Dictionary containing:
+        - 'params' : model parameters {a, tau, b, d}
+        - 'model'  : modeled calibration values
+        - 'time_s' : time vector in seconds relative to start time
+    """
+
+    #### Time vector in seconds
+    ### Add new column: convert DateTime into relative seconds from beginning
+    calib_df['time_seconds'] = (calib_df['Date'] - calib_df['Date'].iloc[0]).dt.total_seconds()
+
+
+    #### Least Square Inversion (Gauss–Newton + tau grid)
+    params, best_tau = invert_Jmatrix(time_s=calib_df['time_seconds'].values, 
+                                      obs=calib_df[col].values, 
+                                      tau_grid=tau_grid, maxfev=maxfev)
+
+    #### Retrieve parameters
+    ### Can be merged with next step using (*kwarg)
+    d, b, a = params
+
+    #### Modelling
+    model = exp_linear(calib_df['time_seconds'].values, a, best_tau, b, d)
+
+    return {"params": {
+                        "a": a,
+                        "tau": best_tau,
+                        "b": b,
+                        "d": d},
+            "model": model,
+            "time_s": calib_df['time_seconds'].values}
+
