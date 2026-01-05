@@ -25,8 +25,8 @@ from datetime import date
 import matplotlib.pyplot as plt 
 
 # sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
-from io_local import read_events_log, calibrations
-from plots import (
+from src.A0A.core import read_events_log, calibrations
+from src.A0A.plots import (
     plot_calibrations,
     plot_check_zeros,
     plot_calibration_curves)
