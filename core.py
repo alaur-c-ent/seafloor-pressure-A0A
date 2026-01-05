@@ -6,6 +6,7 @@ Input and ouput functions for A0A seafloor pressure datasets procesisng.
 2024/2025 — alaurent
 """
 
+import json
 import pandas as pd
 
 
@@ -173,3 +174,36 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
     calib_df['Calib_2'] -= calib_df['Calib_2'].values[0]
 
     return calib_df
+
+
+def save_drift_model(params, sensor_name, model_name, today, pathout):
+    """
+    Save drift model parameters to a JSON file.
+
+    Parameters
+    ----------
+    params : dict
+        Model parameters (a, tau, b, d).
+    sensor : str
+        Sensor identifier (e.g. BPR1, BPR2).
+    model_name : str
+        Name of the drift model (e.g. 'exp_linear').
+    output_path : str
+        Directory where the file is saved.
+    filename : str
+        Output filename.
+    """
+
+    model_dict = {"model": model_name,
+                  "sensor": sensor_name,
+                  "parameters": params,
+                  "units": {
+                            "a": "dBar",
+                            "tau": "s",
+                            "b": "dBar/s",
+                            "d": "dBar"},
+                  "created": today, # more detailled way : datetime.utcnow().isoformat() + "Z"
+                }
+
+    with open(pathout, 'w') as f:
+        json.dump(model_dict, f, indent=2)
