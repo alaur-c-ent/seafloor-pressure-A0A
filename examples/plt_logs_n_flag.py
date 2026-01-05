@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 """
-STEP 1 
+STEP 1 : Parsing pressure datasets.
 
 Read the A0A dataset (read {serialnumber}_{YYYYMMDD}_{HHMM}_data.txt file) 
 and the events log (read {sn}_{YYYYMMDD}_{HHMM}_event.txt file). .
@@ -30,7 +30,7 @@ import pandas as pd
 from datetime import date, timedelta
 
 #sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
-from io_local import (read_A0A_data, read_events_log, flag_and_extract_zeros)
+from src.A0A.core import (read_A0A_data, read_events_log, flag_and_extract_zeros)
 from plots import (plotlog, plot_barometer_and_temperatures, plot_pressure, plot_deltaP)
 
 ########################################
