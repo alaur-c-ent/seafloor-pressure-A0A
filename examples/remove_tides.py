@@ -29,7 +29,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 
 # sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
-from src.A0A.plots import plot_res_tides
+from src.A0A.plots import plot_res_tides, plot_deltaP
 
 
 def cst2dataframe(ut_output):
@@ -236,8 +236,20 @@ def main():
                         colors_code=channels_colors, figsize=(12, 6), text_size='large')
 
     fig.savefig(os.path.join(output_path, f"{station_name}_tide_residual_signal_{today}.pdf"), dpi=300)
-
     plt.show()
+
+    ######################################
+    #### PLOT DRIFT CORRECTED PRESSURE DIFFERENCE
+    outfile = f'Tides_corrected_deltaP_{station_name}_{today}.pdf'
+    title = u'{} - Tides corrected $\Delta$P = BPR2 - BPR1'.format(station_name)
+    print(f'\n{today} -  Plot {title}.\n')
+    plot_deltaP(resampled_df,
+                deltaP=None,
+                keys=('BPR_detided_1', 'BPR_detided_2'),
+                show_calibrations=False,
+                title=title,
+                text_size='large',
+                plot_fig=True, output_path=output_path, filenamout=outfile, savefig=True)
 
 
 if __name__ == "__main__":
