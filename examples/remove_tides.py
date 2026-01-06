@@ -99,7 +99,9 @@ def barplot_utide(ut_output, title='', amin=.01, text_size='medium'):
     ### PLOT
     fig = plt.figure(figsize=(10, 6))
     plt.bar(x, y, yerr=yerr,
-                capsize=1, color='lightblue', edgecolor='black')
+               capsize=1, 
+               color='lightblue', edgecolor='black',
+               zorder=3)
 
     plt.title(title)
     plt.xlabel('Tidal Constituent', fontsize=text_size)
