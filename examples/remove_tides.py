@@ -143,10 +143,6 @@ def main():
     ### With respect to YTT nomenclature
     # data_path = os.path.join(root_path, recover_date, station_name, f'A0A{X}_OBP_1min.csv')
 
-    events_path = os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_events.txt')
-
-    calib_path = os.path.join(root_path,recover_date, station_name, rsk_reference,  f"A0A{X}_Calib.csv")
-
     os.makedirs(output_path, exist_ok=True)
 
     today = date.today().strftime("%Y%m%d")   ### Warning not UTC
@@ -205,7 +201,9 @@ def main():
     ##### SAVE WATER HEIGHTS USED TO CORRECT THE SIGNAL
     #### Not necessary to re-run tide analysis in futur data process
     waterH_outpath = os.path.join(root_path, recover_date, station_name, rsk_reference,f'{rsk_reference}_{resample_to}_water_heights.txt')
-
+    waterH_df = pd.DataFrame(water_heights)
+    waterH_df.to_csv(waterH_outpath, index=False)
+   
     ########################################
     ##### SAVE NEW DATASET WITH TIDE CORRECTED PRESSURE
     resampled_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_{resample_to}_tides_corrected.txt'))
