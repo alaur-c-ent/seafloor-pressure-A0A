@@ -113,29 +113,27 @@ def barplot_utide(ut_output, title='', amin=.01, text_size='medium'):
     fig.autofmt_xdate()
     return fig
 
+########################################
+#### DEFINE PATHS ####
+root_path = '/Users/alaure04/moby-data/DATA/'
+recover_date = '2025_09_30'
+station_name = 'A0A_MAY33_R'
+X=8 ## manually indexing of the number of deployment (coherent with previous nomenclature, but automatisation not allowed here)
+rsk_reference = '208295_20250930_0551'
 
-def main():
-        
-    ########################################
-    #### DEFINE PATHS ####
-    root_path = '/Users/alaure04/moby-data/DATA/'
-    recover_date = '2025_09_30'
-    station_name = 'A0A_MAY33_R'
-    X=8 ## manually indexing of the number of deployment (coherent with previous nomenclature, but automatisation not allowed here)
-    rsk_reference = '208295_20250930_0551'
+output_path = os.path.join(root_path, recover_date, station_name,  'figures/tides_analysis/')
 
-    output_path = os.path.join(root_path, recover_date, station_name,  'figures/tides_analysis/')
+########################################
+#### OPTIONS & AESTHETICS ####
+text_size = 'large'
 
-    ########################################
-    #### OPTIONS & AESTHETICS ####
-    text_size = 'large'
-
-    channels_colors = {'BB': 'violet',
+channels_colors = {'BB': 'violet',
                     'BPR1': 'orange',
                     'BPR2': 'darkgreen',
                     'T_ext' : 'tab:red'}
 
-
+def main():
+        
     #### Build input file paths
     data_path = os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_data_corrected.txt')
     ### Other posible datasets :
@@ -233,7 +231,7 @@ def main():
     # keys = ('BPR_detided_1', 'BPR_detided_2')
 
     fig = plot_res_tides(resampled_df, keys, legend_txt, tide_offset, 
-                        colors_code=channels_colors, figsize=(12, 6), text_size='large')
+                        colors_code=channels_colors, figsize=figsize, text_size='large')
 
     fig.savefig(os.path.join(output_path, f"{station_name}_tide_residual_signal_{today}.pdf"), dpi=300)
     plt.show()
