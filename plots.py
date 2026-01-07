@@ -521,6 +521,95 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
     return fig
 
 
+def compare_calib_models(calib_df, calib_keys, models, 
+                              colors_code=None, linestyles=None, calib_error=None,
+                              title='', figsize=(10, 5), text_size='medium'):
+    """
+    Plot calibration curves together with one or several drift models.
+
+    This function compares observed calibration values with modeled drift
+    curves. Several models can be displayed simultaneously using 
+    different visual styles (color, linestyle).
+
+    Parameters
+    ----------
+    calib_df : pandas.DataFrame
+        DataFrame containing calibration values and model predictions.
+    calib_keys : tuple
+        e.g. ('Calib_1', 'Calib_2').
+    models : dict
+        Nested dictionary describing models to plot.
+    colors_code : list or dict, optional
+        Colors used for models (cycled if list).
+    linestyles : list, optional
+        Linestyles used for different models.
+    calib_error : list of tuples, optional
+        Time intervals to shade in grey meaning valve movement error(s), e.g. [(t_start, t_end)].
+    title : str, optional
+        Figure title.
+    figsize : tuple, optional
+        Figure size.
+    text_size : str, optional
+        Font size for labels and legend.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure object.
+    """
+    if colors_code is None:
+        colors_code = {'Calib_1' : 'orange',
+                       'Calib_2' : 'darkgreen',
+                       'Barometer_pressure' : 'violet',
+                       'External_temp' : 'tab:red'}
+        
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.tick_params(axis='both', labelsize=text_size)
+    # ax.set_ylabel(ylabel, fontsize=text_size)
+    ax.set_ylabel(u'Normalised internal presssure [dBar]', fontsize=text_size)
+    ax.set_title(title, fontsize=text_size)
+    ax.grid(which='both', lw=0.45, color='silver', zorder=0)
+
+    ### Display shadded intervals if valve movement error
+    if calib_error:
+        i = 0
+        for t0, t1 in calib_error:
+            ax.axvspan(t0, t1, color='grey', alpha=0.5, label='Valve movement error' if i == 0 else '')
+            i += 1
+
+    ### Plot calibration values
+    for key in calib_keys:
+        ax.plot(calib_df['Date'], calib_df[key],
+            marker='o', linestyle='-', zorder=3,
+            c=get_color_from_name(key, colors_code),
+            label=f'{key.replace("_", " ")}')
+
+    ### Plot model
+    color_cycle = itertools.cycle(colors_code) if isinstance(colors_code, list) else None
+    linestyle_cycle = itertools.cycle(linestyles or ['--', ':', '-.'])
+
+    for model_name, model_def in models.items():
+        ls = next(linestyle_cycle)
+
+        for sensor, cfg in model_def.items():
+            c = (
+                get_color_from_name(sensor, colors_code)
+                if isinstance(colors_code, dict)
+                else next(color_cycle) if color_cycle
+                else None)
+
+            tau_val = 'τ={:.0e}'.format(cfg['tau'] if 'tau' in cfg else '')
+            leg_txt = f'BPR{model_name[-1]} {model_name[:-2]}, {tau_val}'
+            ax.plot(calib_df['Date'], calib_df[cfg['col_name']],
+                linestyle=ls, color=c, linewidth=1.5,
+                label=leg_txt, zorder=2)
+
+    ax.legend(loc='upper right', fontsize=text_size)
+    fig.tight_layout()
+
+    return fig    
+
+
 def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', colors_code=None, use_cmap=False,
                             ylim=(0, 20), text_size='large', figsize=(10, 5)):
     """
