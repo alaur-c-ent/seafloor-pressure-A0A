@@ -235,10 +235,10 @@ def plot_pressure(clean_df, keys, calibration_times=None, show_calibrations=True
                 for i, t in enumerate(calibration_times):
                         _ax.axvline(t, color='tomato', lw=0.8, zorder=1, alpha=0.8, 
                                     label='Calib. sequence' if i == 0 else '')
+                        _ax.legend(loc='upper right', labelspacing=0.05)
             _ax.set_ylabel('Seafloor pressure [dBar]') #, labelsize=text_size)
             _ax.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
             _ax.tick_params(axis='both') #, labelsize=text_size)
-            _ax.legend(loc='upper right', labelspacing=0.05)
 
         fig.suptitle(fig_title)
 
