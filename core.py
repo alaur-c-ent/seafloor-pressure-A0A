@@ -179,7 +179,8 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
 def make_model_output_df(model_output):
     """
     Transform the nested list containing identical length pd.Series
-    into a single concatenate dataframe 
+    into a single concatenate dataframe
+    (not used anymore)
     """
     ### Convert each nested dictionnaries
     dfs = []
