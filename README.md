@@ -18,8 +18,6 @@ This repository implements processing strategies developed and applied to recent
   **REVOSIMA** observatory,
 - deployments along the South-East Indian Ridge east of New Amsterdam Island.
 
-Website of REVOISMA on SEXTANT : https://sextant.ifremer.fr/Ressources/Liste-des-catalogues-thematiques/Revosima
-
 The repository provides research-grade tools to process raw A0A pressure records into drift- and tide-corrected time series suitable for geophysical analysis. This includes:
 - extracting instrumental drift using in situ self-calibration (zero pressure) sequences,
 - modelling drift curves using a least square regression.
@@ -124,6 +122,8 @@ Users are strongly encouraged to:
 
 ---
 ## References
+
+Website of REVOSIMA on SEXTANT : https://sextant.ifremer.fr/Ressources/Liste-des-catalogues-thematiques/Revosima
 
 Key references underlying the A0A pressure gauge and drift-correction methodology include:
 
