@@ -105,6 +105,8 @@ def main():
   This is a adpated replicate to do so on REVOSIMA's A0A instruments.
   """
   model_name = 'exp_linear'
+  # model_name = 'exp_lin_H'
+  
   #### MODEL DRIFTS CURVES - INITIAL PARAMETERS DEFINITION
   # Tested tau values number (number of iteration)
   maxfev = 1000 
@@ -118,11 +120,33 @@ def main():
       tau_grid_BPR1 = np.linspace(1e6, 1e7, maxfev) # 2025-07-18 MAY30_A0A_C
       tau_grid_BPR2 = np.linspace(1e6, 1e7, maxfev) # same
   
-  ### EXP-LIN INVERSION ON DRIFT CURVES
-  ## To improve : add the model_name to function to choose model type
-  BPR1_fit = fit_drift_curve(calib_df, col='Calib_1', tau_grid=tau_grid_BPR1)
-  BPR2_fit = fit_drift_curve(calib_df, col='Calib_2', tau_grid=tau_grid_BPR2)
-  
+    ### EXP-LIN INVERSION ON DRIFT CURVES
+    if model_name == 'exp_linear':
+        BPR1_fit = fit_drift_curve(calib_df['Calib_1'].values, 
+                                tau_grid=tau_grid_BPR1, 
+                                time=calib_df['Date'], 
+                                model=model_name, t_event=None)
+        BPR2_fit = fit_drift_curve(calib_df['Calib_2'].values, 
+                                tau_grid=tau_grid_BPR2, 
+                                time=calib_df['Date'], 
+                                model=model_name, t_event=None)
+
+    elif model_name == 'exp_lin_H':
+        ### Random example
+        t_event = np.datetime64("2025-02-19 20:00:00")
+
+        BPR1_fit = fit_drift_curve(calib_df['Calib_1'].values, 
+                                tau_grid=tau_grid_BPR1, 
+                                time=calib_df['Date'], 
+                                model='exp_lin_H', t_event=t_event)
+        BPR2_fit = fit_drift_curve(calib_df['Calib_2'].values, 
+                                tau_grid=tau_grid_BPR2, 
+                                time=calib_df['Date'], 
+                                model='exp_lin_H', t_event=t_event)
+
+    else:
+        raise ValueError(f'Unknown model {model_name}')
+      
   ######################################
   #### STORE AND SAVE DRIFT MODEL
   ### Add models to the calib_df
