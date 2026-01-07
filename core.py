@@ -176,6 +176,32 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
     return calib_df
 
 
+def make_model_output_df(model_output):
+    """
+    Transform the nested list containing identical length pd.Series
+    into a single concatenate dataframe 
+    """
+    ### Convert each nested dictionnaries
+    dfs = []
+    for d in model_output:
+        ### Extract keys for headers
+        cols = [k for k in d.keys() if k not in ['id', 'Date']]
+        ### Create singular dataframe
+        df = pd.DataFrame({
+            'id': d['id'],
+            'Date': pd.to_datetime(d['Date'].values),
+            cols[0]: d[cols[0]].values,   # une seule clé variable par dict
+        })
+        dfs.append(df)
+
+    ### Merge each dataframe
+    df_merged = dfs[0]
+    for df in dfs[1:]:
+        df_merged = pd.merge(df_merged, df, on=['id', 'Date'], how='outer')
+    print(df_merged)
+    return df_merged
+
+
 def save_drift_model(params, sensor_name, model_name, today, pathout):
     """
     Save drift model parameters to a JSON file.
