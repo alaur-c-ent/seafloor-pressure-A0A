@@ -184,7 +184,6 @@ def fit_drift_curve(val, tau_grid, time, model='exp_linear', t_event=None):
                         'c' : c,
                         'd' : d,
                         'tau' : best_tau,
-                        'H' : H,
                         },
             "model_type" : model,
             "model": model_values,
