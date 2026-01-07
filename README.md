@@ -67,16 +67,23 @@ stepwise approach:
   - reading raw pressure, temperature and barometric records,
   - identification of calibration (zero-pressure) sequences,
   - flagging and extraction of valid data segments.
+  - `examples/plt_logs_n_flag.py`
 
 - STEP 2 – In situ calibration and drift estimation
   - extraction of calibration sequences (zero-pressure measurements),
   - computation of per sequence calibration values,
   - control by differential pressure (ΔP) signal.
+  - - `examples/compute_calibrations.py`
 
 - STEP 3 – Correction of pressure records
   - STEP 3.1: modelling of instrumental drift using exponential + linear regression,
+  - - `examples/fit_drift_curves.py`
   - STEP 3.2: correction of long-term drift on pressure time series,
+  - `examples/drift_correction.py`
   - STEP 3.3: removal of tidal signals using harmonic analysis (UTide).
+  - `examples/remove_tides.py`
+
+Another example of the data process from raw to drift corrected is available : `examples/example.py`
 
 The exponential + linear drift models implemented here are directly applied
 to long-term deployments and subsequently used to correct full-resolution
