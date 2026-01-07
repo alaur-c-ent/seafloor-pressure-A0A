@@ -37,6 +37,28 @@ def double_exp_linear(t, a1, tau1, a2, tau2, b, c):
     """
     return a1 * np.exp(-t / tau1) + a2 * np.exp(-t / tau2) + b * t + c
 
+
 def residuals(params, t, p):
     return double_exp_linear(t, *params) - p
+
+
+def heaviside(t, t0, x, y):
+     """
+     Heaviside function composed of 1 and 0. 
+     time vector should be type class numpy.dtype[datetime64]
+     in order to be compare with conditionnal (np.where())
+     """
+     Harray = np.where(t >= t0, x, y)   
+     return Harray
+
+
+def exp_linear_H(t, a, tau, b, c, d, H):
+    """
+    Combined exponential decay + linear trend + Heaviside function: 
+    p(t) = a*exp(-t/tau) + b*t + c*H(t) + d
+    
+    Adding a Heaviside function to account for the sharp pressure drop 
+    that seems to have affected calibration values.
+    """
+    return a * np.exp(-t / tau) + b * t + c * H + d
 
