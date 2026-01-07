@@ -174,7 +174,10 @@ def fit_drift_curve(val, tau_grid, time, model='exp_linear', t_event=None):
 
         #### Modelling
         model_values = exp_linear_H(time_s, a, best_tau, b, c, d, H)
-
+        
+    else:
+        raise ValueError(f'Unknown model {model}')
+    
     return {"params": {
                         'a' : a,
                         'b' : b,
