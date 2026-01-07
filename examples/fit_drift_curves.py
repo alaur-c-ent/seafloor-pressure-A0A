@@ -171,7 +171,6 @@ def main():
   
   ######################################
   #### DISPLAY RESULT
-  ### if needed on checking/ploting only the modelled curves
   use_cmap = False
   if model_name == 'exp_linear':
       title = f'{station_name} –– Exponential-linear drift models'
