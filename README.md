@@ -73,11 +73,11 @@ stepwise approach:
   - extraction of calibration sequences (zero-pressure measurements),
   - computation of per sequence calibration values,
   - control by differential pressure (ΔP) signal.
-  - - `examples/compute_calibrations.py`
+  - `examples/compute_calibrations.py`
 
 - STEP 3 – Correction of pressure records
   - STEP 3.1: modelling of instrumental drift using exponential + linear regression,
-  - - `examples/fit_drift_curves.py`
+  - `examples/fit_drift_curves.py`
   - STEP 3.2: correction of long-term drift on pressure time series,
   - `examples/drift_correction.py`
   - STEP 3.3: removal of tidal signals using harmonic analysis (UTide).
