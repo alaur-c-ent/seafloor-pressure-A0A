@@ -9,6 +9,7 @@ All plots
 
 
 import os
+import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
