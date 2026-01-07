@@ -24,12 +24,11 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from scipy.stats import linregress
 
-sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
-# from src.A0A.core import read_events_log, calibrations, save_drift_model
-from core import read_A0A_data, read_events_log, calibrations, save_drift_model
-from models import exp_linear, heaviside, exp_linear_H
-from inversion import fit_drift_curve
-from plots import (plot_pressure, 
+#sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
+from src.A0A.core import read_A0A_data, read_events_log, calibrations, save_drift_model
+from src.A0A.models import exp_linear, heaviside, exp_linear_H
+from src.A0A.inversion import fit_drift_curve
+from src.A0A.plots import (plot_pressure, 
                    plot_calibrations, 
                    plot_deltaP, 
                    plot_calibration_curves,
