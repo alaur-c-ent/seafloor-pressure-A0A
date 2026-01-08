@@ -89,13 +89,6 @@ The output consists of cleaned, drift and tide corrected pressure records
 ready to be published and/or pursue geophysical/oceanogrpahic analysis.
 
 ---
-## Data policy
-
-No raw scientific data are distributed in this repository.
-
-Users are expected to apply the codes to their own datasets, respecting the data policies of the corresponding projects and institutions.
-
----
 ## Methodological notes
 
 Instrumental drift is modelled following approaches commonly used for quartz pressure sensors, combining:
@@ -147,6 +140,13 @@ Users are responsible for validating results obtained with these tools.
 This work was carried out during a postdoctoral (A.T.E.R) position at La Rochelle Université, in collaboration with researchers from LIENS, the University of Tasmania, and RBR Ltd. (Canada).
 
 Initial developments in seafloor pressure data processing were initiated by Yann-Treden Tranchant during his PhD at La Rochelle Université and are further extended in this repository.
+
+---
+## Data policy
+
+No raw scientific data are distributed in this repository.
+
+Users are expected to apply the codes to their own datasets, respecting the data policies of the corresponding projects and institutions.
 
 ---
 ## License
