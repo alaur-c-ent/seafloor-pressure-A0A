@@ -93,10 +93,6 @@ ready to be published and/or pursue geophysical/oceanogrpahic analysis.
 
 No raw scientific data are distributed in this repository.
 
-When examples are provided, they rely on:
-- synthetic datasets, or
-- reduced / anonymized excerpts for demonstration purposes only.
-
 Users are expected to apply the codes to their own datasets, respecting the data policies of the corresponding projects and institutions.
 
 ---
