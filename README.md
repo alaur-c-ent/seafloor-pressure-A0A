@@ -85,10 +85,6 @@ stepwise approach:
 
 Another example of the data process from raw to drift corrected is available : `examples/example.py`
 
-The exponential + linear drift models implemented here are directly applied
-to long-term deployments and subsequently used to correct full-resolution
-pressure time series prior to tidal analysis.
-
 The output consists of cleaned, drift and tide corrected pressure records
 ready to be published and/or pursue geophysical/oceanogrpahic analysis.
 
