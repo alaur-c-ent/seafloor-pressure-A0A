@@ -100,10 +100,8 @@ These formulations are consistent with previous long-term A0A seafloor pressure
 study and manufacturer-led validation experiments.
 
 Users are strongly encouraged to:
-* visually inspect calibration sequences,
+* visually inspect calibration sequences (setting adapted buffer times),
 * assess residuals after correction,
-* interpret corrected signals in combination with independent observations
-  (e.g. GNSS, seismicity, oceanographic data).
 
 ---
 ## References
