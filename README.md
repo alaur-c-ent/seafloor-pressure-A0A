@@ -37,6 +37,7 @@ Seafloor pressure gauges provide a direct proxy for vertical ground motion, with
 - instrumental drift of quartz pressure sensors,
 - instrumental artifacts,
 - ocean dynamic signals.
+  
 The A0A method mitigates part of these limitations by performing periodic in situ zero-pressure measurements, enabling the estimation of each sensors drift during deployment. Zero-pressure measurements (internal vave rotation into the instrument housing) are then used to correct raw seafloor pressure signals from drift.
 
 ---
