@@ -39,6 +39,8 @@ def read_events_log(data_path):
     """
     Read RBR events log and extract valve rotation times.
 
+    As first made by Y.-T. Tranchant (https://orcid.org/0000-0002-7568-4123).
+
     Parameters : 
     data_path : str
         Path to the {serial_number}_{YYYYMMDD}_{HHMM}_events.txt file.
@@ -60,6 +62,7 @@ def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
     """
     Flag A0A data as Ambient (A), Zero (Z) or False (F),
     extract calibration sequences (Z), clean data (A only) by removing bad quality data (F).
+    As first proposed by Y.-T. Tranchant (https://orcid.org/0000-0002-7568-4123).
 
     Parameters
     ----------
