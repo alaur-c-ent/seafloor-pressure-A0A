@@ -190,7 +190,7 @@ For questions, comments or suggestions about the scripts, please contact:
 - Angèle Laurent (anlaurent@ipgp.fr) 
   (post-doc researcher at OVPF-IPGP, part of the REVOSIMA consortium)
 
-For questions about the instrument, please contact :
+For questions about seafloor pressure methods and pressure gauges, please contact :
 - Valérie Ballu (valerie.ballu@univ-lr.fr) and Laurent Testut (laurent.testut@univ-lr.fr)
 - Jean Michel Leconte (oem@rbr-global.com)
 
