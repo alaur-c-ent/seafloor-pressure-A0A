@@ -136,9 +136,19 @@ This repository contains **research-grade code**.
 
 Users are responsible for validating results obtained with these tools.
 
-This work was carried out during a postdoctoral (A.T.E.R) position at La Rochelle Université, in collaboration with researchers from LIENS, the University of Tasmania, and RBR Ltd. (Canada).
+---
+## Authorship and Contributions
 
-Initial developments in seafloor pressure data processing were initiated by Yann-Treden Tranchant during his PhD at La Rochelle Université and are further extended in this repository.
+This repository is maintained by Angèle Laurent and gathers codes developed
+during her work as post-doct (A.T.E.R) at Université de La Rochelle/LIENSs (UMR 7266) 
+and subsequent research activities.
+
+The present workflow results from both original developments and the
+integration/adaptation of previous codes and methods developed within the
+LIENSs : 
+- Initial methodological developments were initiated by Yann-Treden Tranchant during his PhD at La Rochelle Université. 
+- Drift fitting least square method was developed with Alexandre Duvernay during his internship at La Rochelle Université.
+- Scientific supervision, methodological framing and validation were made by Laurent Testut (LIENS) and Valérie Ballu (LIENS).
 
 ---
 ## Data policy
@@ -181,6 +191,6 @@ For questions, comments or suggestions about the scripts, please contact:
   (post-doc researcher at OVPF-IPGP, part of the REVOSIMA consortium)
 
 For questions about the instrument, please contact :
-- Valérie Ballu (valerie.ballu@univ-lr.fr)
+- Valérie Ballu (valerie.ballu@univ-lr.fr) and Laurent Testut (laurent.testut@univ-lr.fr)
 - Jean Michel Leconte (oem@rbr-global.com)
 
