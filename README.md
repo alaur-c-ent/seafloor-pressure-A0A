@@ -172,7 +172,7 @@ I warmly acknowledge Y.-T. Tranchant, A. Duvernay, L. Testut and V. Ballu for
 their scientific contributions, discussions, collaboration and previous
 developments on which parts of this work are built.
 
-The author thanks Pierre Sakic (IPGP) for his knowledges about the development of seafloor geodetic processing tools and for insightful discussions that indirectly supported the work presented in this repository.
+I also thank Pierre Sakic (IPGP) for his knowledges about the development of seafloor geodetic processing tools and for insightful discussions that indirectly supported the work presented in this repository.
 
 ---
 ## Citation
