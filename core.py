@@ -58,7 +58,7 @@ def read_events_log(data_path):
     return events_df, times_marine, times_ambi, times_error
 
 
-def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
+def flag_and_extract_zeros(df, window, times_ambi, times_error):
     """
     Flag A0A data as Ambient (A), Zero (Z) or False (F),
     extract calibration sequences (Z), clean data (A only) by removing bad quality data (F).
@@ -68,8 +68,8 @@ def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
     ----------
     df : pandas.DataFrame
         Time-indexed dataframe containing uncorrected data.
-    times_marine : array-like pandas.Series
-        Timestamps of atmospheric (zero-pressure) valve switches.
+    window : int
+         Duration in seconds of a calibration sequence (e.g., 250 ; 1200 seconds).
     times_ambi : array-like pandas.Series
         Timestamps of marine valve switches.
     times_error : int, optional
@@ -96,7 +96,7 @@ def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
         Z_start = ta + pd.Timedelta(seconds=10)
         # Z_start = ta - pd.Timedelta(seconds=10)
         ### Extract 20 minutes long zeros
-        Z_end = ta + (pd.Timedelta(minutes=20) - pd.Timedelta(seconds=10))
+        Z_end = ta + (pd.Timedelta(seconds=window) - pd.Timedelta(seconds=10))
         ### WARNING, it can change from one instrument to another (I don't know why)
         ### from t + 20 minutes - 2s to tm - 2s
         # Z_end = tm - pd.Timedelta(seconds=2)
@@ -156,6 +156,8 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
         sel = seg.loc[mask]
         if sel.empty:
             print(f"No data in {lim_inf}–{lim_sup}s window for segment starting at {t}")
+            calib_n += 1
+            continue
         P1_zero = sel['BPR_pressure_1']
         P2_zero = sel['BPR_pressure_2']
         P_barom_zero = sel['Barometer_pressure']
