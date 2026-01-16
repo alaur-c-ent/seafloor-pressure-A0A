@@ -87,11 +87,11 @@ def flag_and_extract_zeros(df, times_marine, times_ambi, times_error):
     df.insert(len(df.iloc[0]), 'Type', 'A')
     df['Type'] = 'A'
     
-    for ta, tm in zip(times_ambi, times_marine):
+    for ta in zip(times_ambi):
         ### Re-write over the flagged 'A' only for zero-measurments windows we want to keep
         Z_start = ta - pd.Timedelta(seconds=10)
         ### Extract 20 minutes long zeros
-        Z_end = tm + pd.Timedelta(minutes=20, seconds=10)
+        Z_end = ta + pd.Timedelta(minutes=20) - pd.Timedelta(seconds=10)
         ### WARNING, it can change from one instrument to another (I don't know why)
         ### from t + 20 minutes - 2s to tm - 2s
         # Z_end = tm - pd.Timedelta(seconds=2)
