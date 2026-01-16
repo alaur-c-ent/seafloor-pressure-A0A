@@ -122,15 +122,15 @@ def main():
     ######################################
     #### WRITE CLEANED DATASETS
     #### Zeros and NO-ZEROS dataset outputs
-    zeros_df.to_csv(os.path.join(root_path, recover_date, station_name, f"{station_name}_zeros.csv"))
-    A0A_clean_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_data_clean.txt'))
+    zeros_df.to_csv(os.path.join(data_folderout, f"{station_name}_zeros.csv"))
+    A0A_clean_df.to_csv(os.path.join(data_folderout, f'{rsk_reference}_data_clean.txt'))
 
     #### Downsampling the data to minutes, hours and days
     # daily_df = A0A_clean_df.resample('1D').mean() ## not smoothed daily mean
     # hourly_df = A0A_clean_df.resample('1H').mean() ## not smoothed 1 hour averaged dataset
     A0A_1min_df = A0A_clean_df.resample('1min').mean() ## not smoothed 1 minute averaged dataset
 
-    A0A_1min_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_1min.txt'))
+    A0A_1min_df.to_csv(os.path.join(data_folderout, f'{rsk_reference}_1min.txt'))
 
     ######################################
     #### PLOT UNCORRECTED CLEANED TIMESERIES 
