@@ -16,12 +16,17 @@ import matplotlib.colors as colors
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
 
-def get_color_from_name(name, colors_code, default='black'):
+def get_color_from_key(key, colors_code, default='black'):
     for key, value in colors_code.items():
-        if key[-1].isdigit() and key[-1] in name:
+        if key[-1].isdigit() and key[-1] in key:
             return value
     return default
 
+def get_color_from_name(name, colors_code, default='black'):
+    for key, color in colors_code.items():
+        if key in name:
+            return color
+    return default
 
 def plotlog(df, key, events_log, colors_code=None, title='', plot_log=None, output_path=None, filenamout=None, savefig=None):
     """
@@ -60,7 +65,7 @@ def plotlog(df, key, events_log, colors_code=None, title='', plot_log=None, outp
                       'External_temp' : 'tab:red'}
         plt.figure(figsize=(10, 6))
         plt.grid(which='both', lw=0.45, color='dimgrey', zorder=0)
-        plt.plot(df.index, df[key], label=key, color=get_color_from_name(key, colors_code))
+        plt.plot(df.index, df[key], label=key, color=get_color_from_key(key, colors_code))
         plt.xlabel('Dates')
         plt.ylabel('Pressure [dBar]')
         plt.title(title, loc='left')
@@ -110,29 +115,36 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
                       'BPR_pressure_2' : 'darkgreen',
                       'Barometer_pressure' : 'violet',
                       'External_temp' : 'tab:red'}
+        try:
+            c_bb = get_color_from_name('BB', colors_code)
+            c_t = get_color_from_name('T_ex', colors_code)
+
+        except KeyError:
+            c_bb = get_color_from_name('Barometer_pressure', colors_code)
+            c_t = get_color_from_name('External_temp', colors_code)
             
         _, axs = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
        
         axs[0].set_title(title, fontsize=text_size)
         ## Barometer pressure
         axs[0].plot(df.index, df['Barometer_pressure'], 
-                    linestyle='-', c=colors_code['BB'] or colors_code['Barometer_pressure'], lw=1.,
+                    linestyle='-', c=c_bb, lw=1.,
                     label='P_barometric', rasterized=True)
         axs[0].set_ylabel('Confined presssure [dBar]', fontsize=text_size)
         # axs[0].set_ylim(9.3, 9.4)
 
         ## TemperatureS
         axs[1].plot(df.index, df['Barometer_temp'], 
-                linestyle='-', c=colors_code['BB'] or colors_code['Barometer_pressure'], lw=0.8, #alpha=0.6,
+                linestyle='-', c=c_bb, lw=0.8, #alpha=0.6,
                     label='T_barom', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_1'], 
-                linestyle='dashed', c=get_color_from_name('BPR_temp_1', colors_code), lw=0.8, #alpha=0.6,
+                linestyle='dashed', c=get_color_from_key('BPR_temp_1', colors_code), lw=0.8, #alpha=0.6,
                     label='T_BPR1', rasterized=True)
         axs[1].plot(df.index, df['BPR_temp_2'], 
-                linestyle='dashed', c=get_color_from_name('BPR_temp_2', colors_code), lw=0.8, #alpha=0.6,
+                linestyle='dashed', c=get_color_from_key('BPR_temp_2', colors_code), lw=0.8, #alpha=0.6,
                     label='T_BPR2', rasterized=True)
         axs[1].plot(df.index, df['External_temp'], 
-                linestyle='-', c=colors_code['External_temp'] or 'tab:red', lw=0.8, #alpha=0.6,
+                linestyle='-', c=c_t, lw=0.8, #alpha=0.6,
                     label='T_ext', rasterized=True)
         axs[1].set_ylabel('Degrees [°C]', fontsize=text_size)
         # axs[1].set_ylim(2., 5.)
@@ -212,13 +224,13 @@ def plot_pressure(clean_df, keys, calibration_times=None, show_calibrations=True
 
         axs[0].set_title(f'Paros 1 (BPR1)', loc='left') #, fontsize=text_size)
         axs[0].plot(clean_df.index, (clean_df[keys[0]].values), # this way make it less longer to plot if large dataset
-                c=get_color_from_name(keys[0], colors_code), 
+                c=get_color_from_key(keys[0], colors_code), 
                 # label = 'Uncorrected pressure', 
                 rasterized=True, lw=0.8, zorder=2)
 
         axs[1].set_title(f'Paros 2 (BPR2)', loc='left') #, fontsize=text_size)
         axs[1].plot(clean_df.index, (clean_df[keys[1]].values), 
-                c=get_color_from_name(keys[1], colors_code), 
+                c=get_color_from_key(keys[1], colors_code), 
                 # label = 'Uncorrected pressure', 
                 rasterized=True, lw=0.8, zorder=2)
 
@@ -582,7 +594,7 @@ def compare_calib_models(calib_df, calib_keys, models,
     for key in calib_keys:
         ax.plot(calib_df['Date'], calib_df[key],
             marker='o', linestyle='-', zorder=3,
-            c=get_color_from_name(key, colors_code),
+            c=get_color_from_key(key, colors_code),
             label=f'{key.replace("_", " ")}')
 
     ### Plot model
@@ -594,7 +606,7 @@ def compare_calib_models(calib_df, calib_keys, models,
 
         for sensor, cfg in model_def.items():
             c = (
-                get_color_from_name(sensor, colors_code)
+                get_color_from_key(sensor, colors_code)
                 if isinstance(colors_code, dict)
                 else next(color_cycle) if color_cycle
                 else None)
@@ -657,7 +669,7 @@ def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', col
         
         if use_cmap:
             ax.plot(calib_df.Date, calib_df[col], 
-                color=get_color_from_name(col, colors_code), 
+                color=get_color_from_key(col, colors_code), 
                 zorder=1, alpha=0.8, linestyle='-',
                 label=label)
             sc = ax.scatter(calib_df.Date, calib_df[col], 
@@ -667,7 +679,7 @@ def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', col
                         zorder=4)
         else:
             ax.plot(calib_df.Date, calib_df[col], 
-                    '-o', c=get_color_from_name(col, colors_code), 
+                    '-o', c=get_color_from_key(col, colors_code), 
                     label=label)
     if ylim:
         # ax.set_ylim(*ylim)
@@ -752,7 +764,7 @@ def plot_res_tides(df, keys, legend_txt, tide_offset=1, colors_code=None, figsiz
         ax_right = ax.twinx()
         ax_right.grid(which='both', axis='y', lw=0.5, alpha=0.45, zorder=0)
         ax_right.plot(df.index, df[f'BPR_detided_{n_cha}'],
-                    c=get_color_from_name(key, colors_code), 
+                    c=get_color_from_key(key, colors_code), 
                     rasterized=True,
                     label=f'Residual detided BPR{n_cha}')
         ax_right.tick_params(axis='both', labelsize=text_size)
