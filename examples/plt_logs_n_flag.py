@@ -36,12 +36,14 @@ from src.A0A.plots import (plotlog, plot_barometer_and_temperatures, plot_pressu
 ########################################
 #### DEFINE PATHS ####
 root_path = '/Users/alaure04/moby-data/DATA/'
-recover_date = '2025_09_30'
 station_name = 'A0A_MAY33_R'
 # nbr_deploy = 8 ### 8th deployment of A0A
 rsk_reference = '208295_20250930_0551'
+rsk_ref_lst = rsk_reference.split('_')
+recover_date = rsk_ref_lst[1]
 
 output_path = os.path.join(root_path, recover_date, station_name, 'figures/parsing/')
+data_folderout = os.path.join(root_path, mission, recover_date, station_name)
 
 ########################################
 #### OPTIONS & AESTHETICS ####
@@ -62,8 +64,10 @@ def main():
     data_path = os.path.join(root_path, recover_date, station_name, rsk_reference,f'{rsk_reference}_data.txt')
 
     events_path = os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_events.txt')
-
+    
+    ### Create new folders for figures and (cleaned) datasets if not existing already
     os.makedirs(output_path, exist_ok=True)
+    os.makedirs(data_folderout, exist_ok=True)
 
     #### Read data
     A0A_df = read_A0A_data(data_path)
@@ -96,7 +100,6 @@ def main():
         A0A_df,
         key=pressure_key,
         events_log=events_df,
-        colors_code=channels_colors,
         title=f'{station_name} — {start_date} to {end_date}',
         plot_log=False, output_path=output_path, filenamout=outfile, savefig=save_figure)
     
