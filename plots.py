@@ -16,11 +16,12 @@ import matplotlib.colors as colors
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
 
-def get_color_from_key(key, colors_code, default='black'):
+def get_color_from_key(passes_key, colors_code, default='black'):
     for key, value in colors_code.items():
-        if key[-1].isdigit() and key[-1] in key:
-            return value
+        if key[-1].isdigit() and key[-1] in passes_key:
+                return value
     return default
+
 
 def get_color_from_name(name, colors_code, default='black'):
     for key, color in colors_code.items():
