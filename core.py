@@ -90,7 +90,7 @@ def flag_and_extract_zeros(df, window, times_ambi, times_error):
     for ta in times_ambi: 
         ## Flag 'F' as error all the calibration sequence plus buffer time
         F_start = ta - pd.Timedelta(minutes=5)
-        F_end = ta - pd.Timedelta(minutes=60)
+        F_end = ta + pd.Timedelta(minutes=60)
         df.loc[F_start:F_end, 'Type'] = 'F'
         ### Re-write over the flagged 'A' only for zero-measurments windows we want to keep
         Z_start = ta + pd.Timedelta(seconds=10)
