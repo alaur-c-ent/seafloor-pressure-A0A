@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 
 """
 STEP 3 (part 3) - Remove tide from de-drifted pressure datasets
@@ -28,7 +30,6 @@ import pandas as pd
 from datetime import date
 import matplotlib.pyplot as plt
 
-# sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
 from src.A0A.plots import plot_res_tides, plot_deltaP
 
 
@@ -99,9 +100,8 @@ def barplot_utide(ut_output, title='', amin=.01, text_size='medium'):
     ### PLOT
     fig = plt.figure(figsize=(10, 6))
     plt.bar(x, y, yerr=yerr,
-               capsize=1, 
-               color='lightblue', edgecolor='black',
-               zorder=3)
+                capsize=1, color='lightblue', edgecolor='black', 
+                zorder=3)
 
     plt.title(title)
     plt.xlabel('Tidal Constituent', fontsize=text_size)
@@ -113,29 +113,37 @@ def barplot_utide(ut_output, title='', amin=.01, text_size='medium'):
     fig.autofmt_xdate()
     return fig
 
+
 ########################################
 #### DEFINE PATHS ####
-root_path = '/Users/alaure04/moby-data/DATA/'
-recover_date = '2025_09_30'
-station_name = 'A0A_MAY33_R'
-X=8 ## manually indexing of the number of deployment (coherent with previous nomenclature, but automatisation not allowed here)
-rsk_reference = '208295_20250930_0551'
+root_path = '/Users/alaurent/moby-data/DATA/'
+mission = 'MAYOBS'
 
-output_path = os.path.join(root_path, recover_date, station_name,  'figures/tides_analysis/')
+
+### Name the station
+station_name = 'MAY_C' 
+### Ruskin name of the file
+rsk_reference = '{serialnumber}_{recover_date_YYMMDD}_{recover_time_HHMM}'
+
+rsk_ref_lst = rsk_reference.split('_')
+recover_date = rsk_ref_lst[1]
+
+output_path = os.path.join(root_path, mission, recover_date,  'figures/tides_analysis/')
+data_folderout = os.path.join(root_path, mission, recover_date, station_name)
 
 ########################################
 #### OPTIONS & AESTHETICS ####
 text_size = 'large'
 
 channels_colors = {'BB': 'violet',
-                    'BPR1': 'orange',
-                    'BPR2': 'darkgreen',
-                    'T_ext' : 'tab:red'}
+                'BPR1': 'orange',
+                'BPR2': 'darkgreen',
+                'T_ext' : 'tab:red'}
 
 def main():
-        
+    
     #### Build input file paths
-    data_path = os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_data_corrected.txt')
+    data_path = os.path.join(root_path, mission, recover_date, station_name, f'{rsk_reference}_data_corrected.txt')
     ### Other posible datasets :
     # data_path = os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_1min_corrected.txt')
     ### With respect to YTT nomenclature
@@ -165,7 +173,7 @@ def main():
     #### Add a (new) Timestamp column from DateTimeIndex
     resampled_df['Timestamp'] = resampled_df.index
 
-    print(f'\n {today} - 1 hour resampled pressure datasets\n')
+    print(f'\n {today} - 1 hour resampled pressure dataset\n')
     print(resampled_df.head())
     print()
 
@@ -198,13 +206,13 @@ def main():
     ########################################
     ##### SAVE WATER HEIGHTS USED TO CORRECT THE SIGNAL
     #### Not necessary to re-run tide analysis in futur data process
-    waterH_outpath = os.path.join(root_path, recover_date, station_name, rsk_reference,f'{rsk_reference}_{resample_to}_water_heights.txt')
+    waterH_outpath = os.path.join(data_folderout,f'{rsk_reference}_{resample_to}_water_heights.txt')
     waterH_df = pd.DataFrame(water_heights)
     waterH_df.to_csv(waterH_outpath, index=False)
-   
+
     ########################################
     ##### SAVE NEW DATASET WITH TIDE CORRECTED PRESSURE
-    resampled_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_{resample_to}_tides_corrected.txt'))
+    resampled_df.to_csv(os.path.join(data_folderout, f'{rsk_reference}_{resample_to}_tides_corrected.txt'))
 
     ########################################
     ##### BAR PLOT OF THE TIDE CONSTITUENTS
@@ -234,6 +242,7 @@ def main():
                         colors_code=channels_colors, figsize=figsize, text_size='large')
 
     fig.savefig(os.path.join(output_path, f"{station_name}_tide_residual_signal_{today}.pdf"), dpi=300)
+
     plt.show()
 
     ######################################

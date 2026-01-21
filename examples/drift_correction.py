@@ -23,20 +23,25 @@ import pandas as pd
 from datetime import date
 import matplotlib.pyplot as plt
 
-# sys.path.append('/Users/alaure04/moby-data/CODES/Git_/src/A0A/')
-from src.A0A.core import (read_A0A_data, read_events_log, load_drift_model)
+from src.A0A.core import read_A0A_data, read_events_log, load_drift_model
 from src.A0A.plots import plot_pressure, plot_deltaP
 from src.A0A.models import exp_linear
 
 ########################################
 #### DEFINE PATHS ####
-root_path = '/Users/alaure04/moby-data/DATA/'
-recover_date = '2025_09_30'
-station_name = 'A0A_MAY33_R'
-X=8 ## manually indexing of the number of deployment (coherent with previous nomenclature, but automatisation not allowed here)
-rsk_reference = '208295_20250930_0551'
+root_path = '/Users/alaurent/moby-data/DATA/'
+mission = 'MAYOBS'
 
-output_path = os.path.join(root_path, recover_date, station_name,  'figures/corrected/')
+### Name the station
+station_name = 'MAY_C' 
+### Ruskin name of the file
+rsk_reference = '{serialnumber}_{recover_date_YYMMDD}_{recover_time_HHMM}'
+
+rsk_ref_lst = rsk_reference.split('_')
+recover_date = rsk_ref_lst[1]
+
+output_path = os.path.join(root_path, mission, recover_date,  'figures/corrected/')
+data_folderout = os.path.join(root_path, mission, recover_date, station_name)
 
 ########################################
 #### OPTIONS & AESTHETICS ####
@@ -51,9 +56,9 @@ channels_colors = {'BB': 'violet',
 def main():
 
     #### Build input file paths
-    data_path = os.path.join(root_path, recover_date, station_name, rsk_reference,f'{rsk_reference}_data_clean.txt')
+    data_path = os.path.join(root_path, mission, recover_date, station_name, f'{rsk_reference}_data_clean.txt')
 
-    events_path = os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_events.txt')
+    events_path = os.path.join(root_path, mission, rsk_reference, f'{rsk_reference}_events.txt')
 
     os.makedirs(output_path, exist_ok=True)
 
@@ -69,11 +74,11 @@ def main():
 
     #### Read models parameters
     sensor_name = 'BPR1'
-    BPR1_f_path = os.path.join(root_path, recover_date, station_name, f'A0A{X}_{sensor_name}_drift_model.json')
+    BPR1_f_path = os.path.join(root_path, mission, recover_date, station_name, f'{station_name}_{sensor_name}_drift_model.json')
     BPR1_fit = load_drift_model(BPR1_f_path)
 
     sensor_name = 'BPR2'
-    BPR2_f_path = os.path.join(root_path, recover_date, station_name, f'A0A{X}_{sensor_name}_drift_model.json')
+    BPR2_f_path = os.path.join(root_path, mission, recover_date, station_name, f'{station_name}_{sensor_name}_drift_model.json')
     BPR2_fit = load_drift_model(BPR2_f_path)
 
     #### Read log
@@ -114,7 +119,7 @@ def main():
 
     ######################################
     #### STORE AND SAVE NEW DATASET WITH DEDRIFTED PRESSURE
-    A0A_clean_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_data_corrected.txt'))
+    A0A_clean_df.to_csv(os.path.join(data_folderout, f'{rsk_reference}_data_corrected.txt'))
 
     #### Downsampling the data to minutes, hours and days
     # daily_df = A0A_clean_df.resample('1D').mean() ## not smoothed daily mean
@@ -122,10 +127,10 @@ def main():
     A0A_1min_df = A0A_clean_df.resample('1min').mean() ## not smoothed 1 minute averaged dataset
 
     ### Save also the drift corrected 1 min resampled dataset
-    A0A_1min_df.to_csv(os.path.join(root_path, recover_date, station_name, rsk_reference, f'{rsk_reference}_1min_corrected.txt'))
+    A0A_1min_df.to_csv(os.path.join(data_folderout, f'{rsk_reference}_1min_corrected.txt'))
 
     ### With respect to YTT nomenclature
-    A0A_1min_df.to_csv(os.path.join(root_path, recover_date, station_name, f'A0A{X}_OBP_1min.csv'))
+    A0A_1min_df.to_csv(os.path.join(data_folderout, f'{station_name}_OBP_1min.csv'))
 
     ######################################
     #### PLOT DRIFT CORRECTED TIMESERIES 
@@ -154,5 +159,8 @@ def main():
                 plot_fig=True, output_path=output_path, filenamout=outfile, savefig=True)
 
 
+
 if __name__ == "__main__":
     main()
+
+
