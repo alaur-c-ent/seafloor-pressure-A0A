@@ -5,13 +5,18 @@
 """
 Least square method inversion to find the best parameters including the exponential decay.
 
-Initial version constructed by A. Duvernay (https://orcid.org/0009-0008-5667-6559) 
+Initial linear least square method was constructed by A. Duvernay (https://orcid.org/0009-0008-5667-6559) 
 
 April-June 2025, LIENSs (UMR 7266, La Rochelle), La Rochelle Universite
 """
 
+import sys
 import numpy as np
 from numpy.linalg import inv
+
+sys.path.append('/Users/alaurent/moby-data/CODES/Git_/local/')
+from src.A0A.models import exp_linear, heaviside, exp_linear_H
+
 
 def invert_Jmatrix(time, tau_grid, calibrations, model='exp_linear', t_event=None):
     """
@@ -65,8 +70,17 @@ def invert_Jmatrix(time, tau_grid, calibrations, model='exp_linear', t_event=Non
     if np.issubdtype(time.dtype, np.datetime64):
         # time_s = np.asarray([t.total_seconds() for t in (time - time[0])])
         time_s = np.asanyarray((time - time.iloc[0]).dt.total_seconds())
+        ### Convert time of event (in DateTime) to relative seconds
+        t_event_s = (t_event - time.iloc[0]).total_seconds()
+
+    ### time vector already provided in relative seconds
     elif np.issubdtype(time.dtype, np.floating):
         time_s = np.asarray(time_s)
+        t_event_s = t_event
+
+    ### Artificialy create a daily time vectors for inversion
+    ### Not used in this case. Was used by A. Duvernay
+    # time_s_model = np.arange(time_s[0], time_s[-1])
 
     ### Build the regression matrix (M dimension is model dependent)
     J = np.ones([len(time_s), M])
@@ -77,7 +91,7 @@ def invert_Jmatrix(time, tau_grid, calibrations, model='exp_linear', t_event=Non
     ### Add Heaviside term
     H = None
     if use_heaviside:
-        H = heaviside(np.asarray(time), t0=t_event, x=1, y=0)
+        H = heaviside(time_s, t0=t_event_s, x=1, y=0)
         J[:, 2] = H
         exp_col = 3
     else:
@@ -100,10 +114,9 @@ def invert_Jmatrix(time, tau_grid, calibrations, model='exp_linear', t_event=Non
     ### Final inversion
     ### Invert again to find a, b, d parameters in adequation to the best tau value
     J[:, exp_col] = np.exp(-time_s / best_tau)
+    # J[:, exp_col][time_s >= t_event_s] = 0.0
     invN = inv(J.T @ J)  
     params = invN @ J.T @ np.asarray(calibrations)
-
-    print(params)
 
     ### Check on final residual variance (not used)
     # V = calib - J @ params
@@ -163,6 +176,9 @@ def fit_drift_curve(val, tau_grid, time, model='exp_linear', t_event=None):
         model_values = exp_linear(time_s, a, best_tau, b, d)
 
     elif model == 'exp_lin_H':
+        ### Convert time of event (in DateTime) to relative seconds
+        t_event_s = (t_event - time.iloc[0]).total_seconds()
+
         time_s, params, best_tau, H = invert_Jmatrix(time=time,
                                         tau_grid=tau_grid,
                                         calibrations=val, 
@@ -172,13 +188,25 @@ def fit_drift_curve(val, tau_grid, time, model='exp_linear', t_event=None):
         ### Can be merged with next step using (*kwarg)
         d, b, c, a = params
 
+        # ### Insert the Heaviside step as a new value
+        # ev_idx = np.where((H == 1))[0]
+        # time_s = np.insert(time_s, ev_idx, t_event_s)
+        # H = np.insert(H, ev_idx, 1)
+
+        ### Suppress step in calibrations values
+        # mask_before = time_s < t_event_s
+        # mask_after  = time_s > t_event_s
+
+        # c0 = np.nanmean(val[mask_after]) - np.nanmean(val[mask_before])
+
         #### Modelling
+        # model_values = exp_linear_H(time_s, a, best_tau, b, c, d, (c0*H))
         model_values = exp_linear_H(time_s, a, best_tau, b, c, d, H)
-        
+
     else:
         raise ValueError(f'Unknown model {model}')
-    
-    return {"params": {
+
+    return {"parameters": {
                         'a' : a,
                         'b' : b,
                         'c' : c,

@@ -15,13 +15,13 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
+from datetime import date, timedelta
 
 def get_color_from_key(passes_key, colors_code, default='black'):
     for key, value in colors_code.items():
         if key[-1].isdigit() and key[-1] in passes_key:
                 return value
     return default
-
 
 def get_color_from_name(name, colors_code, default='black'):
     for key, color in colors_code.items():
@@ -116,6 +116,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
                       'BPR_pressure_2' : 'darkgreen',
                       'Barometer_pressure' : 'violet',
                       'External_temp' : 'tab:red'}
+
         try:
             c_bb = get_color_from_name('BB', colors_code)
             c_t = get_color_from_name('T_ex', colors_code)
@@ -123,7 +124,7 @@ def plot_barometer_and_temperatures(df, calibration_times, colors_code=None, tit
         except KeyError:
             c_bb = get_color_from_name('Barometer_pressure', colors_code)
             c_t = get_color_from_name('External_temp', colors_code)
-            
+
         _, axs = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
        
         axs[0].set_title(title, fontsize=text_size)
@@ -445,7 +446,7 @@ def plot_calibrations(zeros_df, calibration_times, keys, window, select_window=(
 
 
 def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 1000), 
-                    ylim=(9.3, 9.8), highlight_ids=None, colors_code=None, figsize=(10, 8)):
+                    ylim=(9., 10.), highlight_ids=None, colors_code=None, figsize=(10, 8)):
     """
     This function display all zero segments for multiple variables 
     in function of the relative time from valve switch, 
@@ -535,6 +536,94 @@ def plot_check_zeros(zeros_df, calibration_times, window, select_window=(600, 10
     return fig
 
 
+def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', colors_code=None, use_cmap=False,
+                            ylim=(0, 20), text_size='large', figsize=(10, 5)):
+    """
+    Plot calibration (drift) curves derived from zero-pressure values.
+
+    Parameters
+    ----------
+    calib_df : pandas.DataFrame
+        DataFrame containing calibration values. Must have 'Date', 'Calib_1', 'Calib_2' named columns.
+    cols : tuple
+        Columns names to plot (default Calib_1, Calib_2).
+    title : str, 
+        Title of the figure. Default is empty title (meaning no title)
+    colors_code : dict, optional
+        Dictionary defining uniform color scheme for sensors.
+    use_cmap : bool, optional
+        If True, color points using a colormap as a function of calibration sequences indexes.
+    ylim : tuple, optional
+        Y-axis limits (e.g., (0, 20)). Max drifting is about 20 cm in worst case scenario.
+    """
+
+    if colors_code is None:
+        colors_code = {'Calib_1' : 'orange',
+                       'Calib_2' : 'darkgreen',
+                       'Barometer_pressure' : 'violet',
+                       'External_temp' : 'tab:red'}
+        
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+        
+    ax.tick_params(axis='both', labelsize=text_size)
+    ax.set_title(title, fontsize=text_size)
+
+    ax.grid(which='both', lw=0.45, color='lightgrey', zorder=0)
+
+    if use_cmap:
+        ### colors_code options 
+        N=len(calib_df)                 
+        cmap = plt.cm.viridis  
+        # cmap = plt.get_cmap(colormap)
+        norm = colors.Normalize(vmin=1, vmax=N)
+
+    for i, col in enumerate(cols):
+        print(col)
+        color = get_color_from_key(col, colors_code)
+        label = col.replace("_", " ")
+        
+        if use_cmap:
+            ax.plot(calib_df.Date, calib_df[col], 
+                color=color, 
+                zorder=1, alpha=0.8, linestyle='-',
+                label=label)
+            sc = ax.scatter(calib_df.Date, calib_df[col], 
+                        linestyle='-', marker='o', s=50,
+                        c=calib_df.index, 
+                        cmap=cmap, norm=norm, 
+                        zorder=4)
+        else:
+            ax.plot(calib_df.Date, calib_df[col], 
+                    '-o', c=color, 
+                    label=label)
+    if ylim:
+        # ax.set_ylim(*ylim)
+        ax.set_ylim(-ylim[1], ylim[0]) ## max drifting is about 20 cm.
+        
+    # ax.set_xlabel('Dates', fontsize=text_size)
+    ax.set_ylabel(u'Normalised internal presssure [dBar]', fontsize=text_size)
+    ax.legend(loc='lower left')
+
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y')) # fmt “Jan 2025”
+    ax.xaxis.set_minor_locator(mdates.MonthLocator())
+    ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
+
+
+    if use_cmap:
+        # sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
+        # cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+        cbar = fig.colorbar(sc, ax=ax, pad=0.02)
+        cbar.set_label('Calibration index', fontsize='medium')
+        cbar.ax.tick_params(labelsize='medium') 
+        cbar.ax.invert_yaxis()
+        ## only integer ticks
+        cbar.locator = ticker.MaxNLocator(integer=True, prune=None)  
+        cbar.update_ticks()
+
+    return fig
+
+
 def compare_calib_models(calib_df, calib_keys, models, 
                               colors_code=None, linestyles=None, calib_error=None,
                               title='', figsize=(10, 5), text_size='medium'):
@@ -570,6 +659,8 @@ def compare_calib_models(calib_df, calib_keys, models,
     -------
     fig : matplotlib.figure.Figure
         Figure object.
+    ax : matplotlib.axes.Axes
+        Main axis.
     """
     if colors_code is None:
         colors_code = {'Calib_1' : 'orange',
@@ -580,7 +671,7 @@ def compare_calib_models(calib_df, calib_keys, models,
     fig, ax = plt.subplots(figsize=figsize)
     ax.tick_params(axis='both', labelsize=text_size)
     # ax.set_ylabel(ylabel, fontsize=text_size)
-    ax.set_ylabel(u'Normalised internal presssure [dBar]', fontsize=text_size)
+    ax.set_ylabel(u'Normalised $\Delta$ presssure [dBar]', fontsize=text_size)
     ax.set_title(title, fontsize=text_size)
     ax.grid(which='both', lw=0.45, color='silver', zorder=0)
 
@@ -596,7 +687,8 @@ def compare_calib_models(calib_df, calib_keys, models,
         ax.plot(calib_df['Date'], calib_df[key],
             marker='o', linestyle='-', zorder=3,
             c=get_color_from_key(key, colors_code),
-            label=f'{key.replace("_", " ")}')
+            # label=f'{key.replace("_", " ")}')
+            label=f'Calibration BPR{key[-1]}')
 
     ### Plot model
     color_cycle = itertools.cycle(colors_code) if isinstance(colors_code, list) else None
@@ -606,109 +698,33 @@ def compare_calib_models(calib_df, calib_keys, models,
         ls = next(linestyle_cycle)
 
         for sensor, cfg in model_def.items():
-            c = (
-                get_color_from_key(sensor, colors_code)
-                if isinstance(colors_code, dict)
-                else next(color_cycle) if color_cycle
-                else None)
+            # c = (
+            #     get_color_from_key(sensor, colors_code)
+            #     if isinstance(colors_code, dict)
+            #     else next(color_cycle) if color_cycle
+            #     else None)
+            if sensor[-1] == '1':
+                c = 'chocolate'
+            elif sensor[-1] == '2':
+                c = 'lime'
 
             tau_val = 'τ={:.0e}'.format(cfg['tau'] if 'tau' in cfg else '')
-            leg_txt = f'BPR{model_name[-1]} {model_name[:-2]}, {tau_val}'
-            ax.plot(calib_df['Date'], calib_df[cfg['col_name']],
-                linestyle=ls, color=c, linewidth=1.5,
-                label=leg_txt, zorder=2)
+            leg_txt = f'{sensor} {model_name}, {tau_val}'
+            ax.plot(
+                calib_df['Date'],
+                calib_df[cfg['col_name']],
+                linestyle=ls,
+                color=c,
+                linewidth=1.5,
+                label=leg_txt,
+                zorder=5)
 
-    ax.legend(loc='upper right', fontsize=text_size)
+    # ax.legend(loc='upper right', fontsize=text_size)
+    ax.legend(loc='lower left', fontsize=text_size)
     fig.tight_layout()
 
-    return fig    
-
-
-def plot_calibration_curves(calib_df, cols=('Calib_1', 'Calib_2'), title='', colors_code=None, use_cmap=False,
-                            ylim=(0, 20), text_size='large', figsize=(10, 5)):
-    """
-    Plot calibration (drift) curves derived from zero-pressure values.
-
-    Parameters
-    ----------
-    calib_df : pandas.DataFrame
-        DataFrame containing calibration values. Must have 'Date', 'Calib_1', 'Calib_2' named columns.
-    cols : tuple
-        Columns names to plot (default Calib_1, Calib_2).
-    title : str, 
-        Title of the figure. Default is empty title (meaning no title)
-    colors_code : dict, optional
-        Dictionary defining uniform color scheme for sensors.
-    use_cmap : bool, optional
-        If True, color points using a colormap as a function of calibration sequences indexes.
-    ylim : tuple, optional
-        Y-axis limits (e.g., (0, 20)). Max drifting is about 20 cm in worst case scenario.
-    """
-
-    if colors_code is None:
-        colors_code = {'Calib_1' : 'orange',
-                  'Calib_2' : 'darkgreen',
-                  'Barometer_pressure' : 'violet',
-                  'External_temp' : 'tab:red'}
-        
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
-        
-    ax.tick_params(axis='both', labelsize=text_size)
-    ax.set_title(title, fontsize=text_size)
-
-    ax.grid(which='both', lw=0.45, color='lightgrey', zorder=0)
-
-    if use_cmap:
-        ### Colors options 
-        N=len(calib_df)                 
-        cmap = plt.cm.viridis  
-        # cmap = plt.get_cmap(colormap)
-        norm = colors.Normalize(vmin=1, vmax=N)
-
-    for i, col in enumerate(cols):
-        label = col.replace("_", " ")
-        
-        if use_cmap:
-            ax.plot(calib_df.Date, calib_df[col], 
-                color=get_color_from_key(col, colors_code), 
-                zorder=1, alpha=0.8, linestyle='-',
-                label=label)
-            sc = ax.scatter(calib_df.Date, calib_df[col], 
-                        linestyle='-', marker='o', s=50,
-                        c=calib_df.index, 
-                        cmap=cmap, norm=norm, 
-                        zorder=4)
-        else:
-            ax.plot(calib_df.Date, calib_df[col], 
-                    '-o', c=get_color_from_key(col, colors_code), 
-                    label=label)
-    if ylim:
-        # ax.set_ylim(*ylim)
-        ax.set_ylim(-ylim[1], ylim[0]) ## max drifting is about 20 cm.
-        
-    # ax.set_xlabel('Dates', fontsize=text_size)
-    ax.set_ylabel(u'Normalised internal presssure [dBar]', fontsize=text_size)
-    ax.legend(loc='lower left')
-
-    ax.xaxis.set_major_locator(mdates.YearLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y')) # fmt “Jan 2025”
-    ax.xaxis.set_minor_locator(mdates.MonthLocator())
-    ax.xaxis.set_minor_formatter(mdates.DateFormatter('%b'))
-
-
-    if use_cmap:
-        # sm = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
-        # cbar = plt.colorbar(sm, ax=ax, pad=0.02)
-        cbar = fig.colorbar(sc, ax=ax, pad=0.02)
-        cbar.set_label('Calibration index', fontsize='medium')
-        cbar.ax.tick_params(labelsize='medium') 
-        cbar.ax.invert_yaxis()
-        ## only integer ticks
-        cbar.locator = ticker.MaxNLocator(integer=True, prune=None)  
-        cbar.update_ticks()
-
-    return fig
-
+    return fig, ax      
+    
 
 def plot_res_tides(df, keys, legend_txt, tide_offset=1, colors_code=None, figsize=(12, 6), text_size='medium'):
     """
@@ -755,7 +771,7 @@ def plot_res_tides(df, keys, legend_txt, tide_offset=1, colors_code=None, figsiz
     for key, ax in zip(keys, axs):
         n_cha = key[-1]
         
-        ax.grid(which='both', axis='x', lw=0.5, alpha=0.45, zorder=0)
+        ax.grid(which='both', axis='y', lw=0.5, alpha=0.45, zorder=0)
         ax.plot(df.index, df[key], 
                     lw=0.7, c='lightgrey', rasterized=True,
                     label=legend_txt+f' BPR{n_cha}')

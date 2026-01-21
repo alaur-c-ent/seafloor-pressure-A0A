@@ -1,6 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
-
 Input and ouput functions for A0A seafloor pressure datasets procesisng. 
 
 2024/2025 — alaurent
@@ -39,8 +40,6 @@ def read_events_log(data_path):
     """
     Read RBR events log and extract valve rotation times.
 
-    As first made by Y.-T. Tranchant (https://orcid.org/0000-0002-7568-4123).
-
     Parameters : 
     data_path : str
         Path to the {serial_number}_{YYYYMMDD}_{HHMM}_events.txt file.
@@ -50,7 +49,7 @@ def read_events_log(data_path):
     """
     events_df = pd.read_csv(data_path, index_col=0, parse_dates=True)
     ## "marine" ambiant-to_marine (external seafloor pressure) switch 
-    times_marine = events_df.Type[events_df.Type == 'Valve movement - Marine'].index[1:-1]
+    times_marine = events_df.Type[events_df.Type == 'Valve movement - Marine'].index[1:]
     ## "ambiant" marine-to-ambiant (zero) switch 
     times_ambi = events_df.Type[events_df.Type == 'Valve movement - Atmospheric'].index 
     times_error  = events_df.Type[events_df.Type == 'Valve movement error'].index
@@ -62,14 +61,13 @@ def flag_and_extract_zeros(df, window, times_ambi, times_error):
     """
     Flag A0A data as Ambient (A), Zero (Z) or False (F),
     extract calibration sequences (Z), clean data (A only) by removing bad quality data (F).
-    As first proposed by Y.-T. Tranchant (https://orcid.org/0000-0002-7568-4123).
 
     Parameters
     ----------
     df : pandas.DataFrame
         Time-indexed dataframe containing uncorrected data.
     window : int
-         Duration in seconds of a calibration sequence (e.g., 250 ; 1200 seconds).
+        Duration in seconds of a calibration sequence (e.g., 250 ; 1200 seconds)
     times_ambi : array-like pandas.Series
         Timestamps of marine valve switches.
     times_error : int, optional
@@ -97,6 +95,7 @@ def flag_and_extract_zeros(df, window, times_ambi, times_error):
         # Z_start = ta - pd.Timedelta(seconds=10)
         ### Extract 20 minutes long zeros
         Z_end = ta + (pd.Timedelta(seconds=window) - pd.Timedelta(seconds=10))
+        # Z_end = ta + (pd.Timedelta(minutes=20) - pd.Timedelta(seconds=10))
         ### WARNING, it can change from one instrument to another (I don't know why)
         ### from t + 20 minutes - 2s to tm - 2s
         # Z_end = tm - pd.Timedelta(seconds=2)
@@ -117,7 +116,7 @@ def flag_and_extract_zeros(df, window, times_ambi, times_error):
     return zeros_df, df_clean
 
 
-def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
+def calibrations(zeros_df, keys, calibration_times, window, winlims):
     """
     Compute calibration values from zero-pressure segments.
 
@@ -125,30 +124,32 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
     -------
     zeros_df : pandas.DataFrame
         Dataframe containing only zero-pressure sequences.
-    times_ambi : array-like pandas.Series
+    keys : tuple, list
+        Required name of the column (e.g., 'BPR_pressure_1', 'BPR pressure 1', 'Zeros 1' etc)
+    calibration_times : array-like pandas.Series
         Timestamps of marine valve switches.
     window : pandas.Timedelta
-        Calibration length in seconds (20 minutes -> 1200 s).  
-    lim_inf : int
-        Relative time in seconds after internal valve switch 
+        Calibration length in seconds (20 minutes -> 1200 s). 
+    winlims : tuple of int
+        Start and end rlative time in seconds after internal valve switch 
         of the selected stable window to compute calibration value.
-    lim_sup
-        End time (in relative seconds) 
-        of the selected stable window to compute calibration value.
-             
+
     Returns
     -------
     calib_df : pandas.DataFrame
         Calibration time series for each pressure sensor.
     """
+    lim_inf, lim_sup = winlims
+
     results = []
 
     calib_n = 1
-    for t in times_ambi:
+    for t in calibration_times:
         seg = zeros_df.loc[t:t+window]
         if seg.empty:
                 print(f'No data for segment starting at {t}')
                 continue
+        
         elapsed_s = seg['time_seconds'] - seg['time_seconds'].iloc[0]
         
         ## Extract the stable zeros selected window
@@ -158,9 +159,10 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
             print(f"No data in {lim_inf}–{lim_sup}s window for segment starting at {t}")
             calib_n += 1
             continue
-        P1_zero = sel['BPR_pressure_1']
-        P2_zero = sel['BPR_pressure_2']
-        P_barom_zero = sel['Barometer_pressure']
+        P1_zero = sel[keys[0]]
+        P2_zero = sel[keys[1]]
+        P_barom_zero = sel[keys[2]]
+
         ### Correct zeros from barometer pressure
         calib1_value = (P1_zero - P_barom_zero).mean()
         calib2_value = (P2_zero - P_barom_zero).mean()
@@ -177,40 +179,13 @@ def calibrations(zeros_df, times_ambi, window, lim_inf, lim_sup):
     ### Concatenate into a new dataframe 
     calib_df = pd.DataFrame.from_records(results, 
                                          index='id', 
-                                         columns=results[0].keys()) #.set_index('id')
+                                         columns=results[0].keys())
 
     ### Normalise the calibration by sutracting the inital state (first value)
     calib_df['Calib_1'] -= calib_df['Calib_1'].values[0]
     calib_df['Calib_2'] -= calib_df['Calib_2'].values[0]
 
     return calib_df
-
-
-def make_model_output_df(model_output):
-    """
-    Transform the nested list containing identical length pd.Series
-    into a single concatenate dataframe
-    (not used anymore)
-    """
-    ### Convert each nested dictionnaries
-    dfs = []
-    for d in model_output:
-        ### Extract keys for headers
-        cols = [k for k in d.keys() if k not in ['id', 'Date']]
-        ### Create singular dataframe
-        df = pd.DataFrame({
-            'id': d['id'],
-            'Date': pd.to_datetime(d['Date'].values),
-            cols[0]: d[cols[0]].values,   # une seule clé variable par dict
-        })
-        dfs.append(df)
-
-    ### Merge each dataframe
-    df_merged = dfs[0]
-    for df in dfs[1:]:
-        df_merged = pd.merge(df_merged, df, on=['id', 'Date'], how='outer')
-    print(df_merged)
-    return df_merged
 
 
 def save_drift_model(params, sensor_name, model_name, today, pathout):
@@ -238,6 +213,7 @@ def save_drift_model(params, sensor_name, model_name, today, pathout):
                             "a": "dBar",
                             "tau": "s",
                             "b": "dBar/s",
+                            "c": "dBar/s",
                             "d": "dBar"},
                   "created": today, # more detailled way : datetime.utcnow().isoformat() + "Z"
                 }
@@ -268,3 +244,4 @@ def load_drift_model(filepath):
         model = json.load(f)
 
     return model
+

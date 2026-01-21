@@ -61,4 +61,3 @@ def exp_linear_H(t, a, tau, b, c, d, H):
     that seems to have affected calibration values.
     """
     return a * np.exp(-t / tau) + b * t + c * H + d
-
